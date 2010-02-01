@@ -1,5 +1,6 @@
 
 noinst_PROGRAMS = benchbitslice testbitslice benchdec benchenc testdec testenc testbsops
+TESTS = testbsops testdec testenc testbitslice
 
 benchbitslice_SOURCES = benchbitslice.c
 benchbitslice_LDADD = $(top_builddir)/src/libdvbcsa.la
