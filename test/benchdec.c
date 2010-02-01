@@ -29,6 +29,10 @@
 #include <dvbcsa/dvbcsa.h>
 #include "dvbcsa_pv.h"
 
+#ifdef HAVE_ASSERT_H
+#include <assert.h>
+#endif
+
 #define TS_SIZE		184
 
 int
@@ -39,6 +43,11 @@ main		(void)
   unsigned int		n, i, c = 0;
   uint8_t		data[256];
   dvbcsa_cw_t		cw = { 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, };
+
+#ifdef HAVE_ASSERT_H
+  assert(key != NULL);
+#endif
+
 #ifdef __linux__
   struct sched_param sp = { .sched_priority = 1 };
 

@@ -75,7 +75,9 @@ struct dvbcsa_bs_key_s * dvbcsa_bs_key_alloc()
   void *p;
 
 #ifdef HAVE_POSIX_MEMALIGN
-  return posix_memalign(&p, sizeof(dvbcsa_bs_word_t), sizeof (struct dvbcsa_bs_key_s)) ? NULL : p;
+  return posix_memalign(&p, sizeof(dvbcsa_bs_word_t) > sizeof(void *)
+			? sizeof(dvbcsa_bs_word_t) : sizeof(void *),
+			sizeof (struct dvbcsa_bs_key_s)) ? NULL : p;
 #else
   p = malloc(sizeof (struct dvbcsa_bs_key_s));
 # ifdef HAVE_ASSERT_H

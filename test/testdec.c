@@ -23,6 +23,10 @@
 #include <dvbcsa/dvbcsa.h>
 #include "dvbcsa_pv.h"
 
+#ifdef HAVE_ASSERT_H
+#include <assert.h>
+#endif
+
 struct			test_s
 {
   const uint8_t		key[256];
@@ -118,6 +122,10 @@ main		(void)
   struct dvbcsa_key_s	*key = dvbcsa_key_alloc();
   unsigned int		i;
   uint8_t		data[256];
+
+#ifdef HAVE_ASSERT_H
+  assert(key != NULL);
+#endif
 
   puts("* CSA decryption *");
 
