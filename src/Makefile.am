@@ -21,5 +21,5 @@ if TRANSPOSE_32
 libdvbcsa_la_SOURCES += dvbcsa_bs_transpose32.c
 endif
 
-libdvbcsa_la_LDFLAGS = -version-info 1:0:0 $(libtool_flags)
+libdvbcsa_la_LDFLAGS = -version-info 1:1:0 $(libtool_flags)
 
