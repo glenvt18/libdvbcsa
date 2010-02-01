@@ -28,6 +28,10 @@
 #include <dvbcsa/dvbcsa.h>
 #include "dvbcsa_pv.h"
 
+#ifdef HAVE_ASSERT_H
+#include <assert.h>
+#endif
+
 int
 main (void)
 {
@@ -38,6 +42,11 @@ main (void)
   uint8_t			data[gs + 1][184];
   struct dvbcsa_bs_batch_s	pcks[gs + 1];
   uint8_t			cw[8] = { 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, };
+
+#ifdef HAVE_ASSERT_H
+  assert(ffkey != NULL);
+#endif
+
 #ifdef __linux__
   struct sched_param sp = { .sched_priority = 1 };
 

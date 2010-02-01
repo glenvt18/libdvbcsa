@@ -23,6 +23,10 @@
 #include <dvbcsa/dvbcsa.h>
 #include "dvbcsa_pv.h"
 
+#ifdef HAVE_ASSERT_H
+#include <assert.h>
+#endif
+
 #define TS_SIZE		184	/* stream size generation */
 
 static void
@@ -60,6 +64,11 @@ main (void)
   struct dvbcsa_bs_batch_s	pcks[gs + 1];
   uint8_t	data[gs][184];
   unsigned int	rnd[gs];
+
+#ifdef HAVE_ASSERT_H
+  assert(ffkey != NULL);
+  assert(key != NULL);
+#endif
 
   //  srand(time(0));
 
