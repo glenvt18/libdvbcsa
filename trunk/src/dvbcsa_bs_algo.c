@@ -99,7 +99,7 @@ struct dvbcsa_bs_key_s * dvbcsa_bs_key_alloc()
 
 void dvbcsa_bs_key_free(struct dvbcsa_bs_key_s *key)
 {
-#ifdef HAVE_MM_ALLOC
+#ifdef HAVE_MM_MALLOC
   _mm_free(key);
 #else
   free(key);
