@@ -77,6 +77,15 @@ fi
 
 AC_CHECK_FUNC(posix_memalign, AC_DEFINE(HAVE_POSIX_MEMALIGN, 1, posix_memalign is available))
 
+AC_MSG_CHECKING([_mm_malloc availability])
+AC_TRY_LINK([#include <mm_malloc.h>], [_mm_malloc(8,8);],
+    [
+	AC_DEFINE(HAVE_MM_MALLOC, 1, _mm_malloc is available)
+	AC_MSG_RESULT([found])
+    ],[
+	AC_MSG_RESULT([no])
+    ])
+
 AC_OUTPUT([
   Makefile
   src/Makefile
