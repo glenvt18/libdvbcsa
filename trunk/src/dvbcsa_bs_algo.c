@@ -30,6 +30,10 @@
 #include "dvbcsa/dvbcsa.h"
 #include "dvbcsa_bs.h"
 
+#ifdef HAVE_MM_MALLOC
+# include <mm_malloc.h>
+#endif
+
 #ifdef HAVE_ASSERT_H
 #include <assert.h>
 #endif
@@ -74,22 +78,32 @@ struct dvbcsa_bs_key_s * dvbcsa_bs_key_alloc()
 {
   void *p;
 
-#ifdef HAVE_POSIX_MEMALIGN
-  return posix_memalign(&p, sizeof(dvbcsa_bs_word_t) > sizeof(void *)
+#if defined(HAVE_MM_MALLOC)
+  p = _mm_malloc(sizeof (struct dvbcsa_bs_key_s), sizeof(dvbcsa_bs_word_t));
+
+#elif defined(HAVE_POSIX_MEMALIGN)
+  p = posix_memalign(&p, sizeof(dvbcsa_bs_word_t) > sizeof(void *)
 			? sizeof(dvbcsa_bs_word_t) : sizeof(void *),
 			sizeof (struct dvbcsa_bs_key_s)) ? NULL : p;
+
 #else
   p = malloc(sizeof (struct dvbcsa_bs_key_s));
+# warning Using malloc instead of posix_memalign may raise alignment issues
 # ifdef HAVE_ASSERT_H
   assert((uintptr_t)p % sizeof(dvbcsa_bs_word_t) == 0);
 # endif
-  return p;
 #endif
+
+  return p;
 }
 
 void dvbcsa_bs_key_free(struct dvbcsa_bs_key_s *key)
 {
+#ifdef HAVE_MM_ALLOC
+  _mm_free(key);
+#else
   free(key);
+#endif
 }
 
 unsigned int dvbcsa_bs_batch_size (void)
