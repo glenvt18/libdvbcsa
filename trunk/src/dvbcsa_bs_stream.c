@@ -174,11 +174,8 @@ dvbcsa_bs_stream_cipher_batch(const struct dvbcsa_bs_key_s *key,
     {
       for (i = 0; i < 8; i++)
 	{
-	  // load first 32 bits of ck into A[aboff+0]..A[aboff+7]
-	  A[i][b] = key->iA_g[i][b];
-
-	  // load last  32 bits of ck into B[aboff+0]..B[aboff+7]
-	  B[i][b] = key->iB_g[i][b];
+	  A[i][b] = key->stream[b + i * 4];
+	  B[i][b] = key->stream[b + i * 4 + 32];
 	}
 
       // all other regs = 0

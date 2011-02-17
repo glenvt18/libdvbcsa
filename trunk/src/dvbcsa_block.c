@@ -24,52 +24,14 @@
 #include "dvbcsa/dvbcsa.h"
 #include "dvbcsa_pv.h"
 
-static const uint8_t csa_key_perm[64] =
-{
-  19, 27, 55, 46,  1, 15, 36, 22, 56, 61, 39, 21, 54, 58, 50, 28,
-   7, 29, 51,  6, 33, 35, 20, 16, 47, 30, 32, 63, 10, 11,  4, 38,
-  62, 26, 40, 18, 12, 52, 37, 53, 23, 59, 41, 17, 31,  0, 25, 43,
-  44, 14,  2, 13, 45, 48,  3, 60, 49,  8, 34,  5,  9, 42, 57, 24,
-};
-
-static inline uint8_t swap_nbl (register uint8_t byte)
-{
-  return ((byte >> 4) | (byte << 4));
-}
-
 void dvbcsa_key_set (const dvbcsa_cw_t cw, struct dvbcsa_key_s *key)
 {
-  uint8_t	s[7][8];
-  int		i, j;
+  uint64_t a = dvbcsa_load_le64(cw);
+  dvbcsa_store_le64(key->cw,  a);
+  dvbcsa_store_le64(key->cws, ((a & 0xf0f0f0f0f0f0f0f0ULL) >> 4) |
+		              ((a & 0x0f0f0f0f0f0f0f0fULL) << 4));
 
-  memset(s, 0, sizeof(s));
-
-  /* control word copy and swap */
-
-  for (i = 0; i < sizeof(dvbcsa_cw_t); i++)
-    key->cws[i] = swap_nbl(s[6][i] = key->cw[i] = cw[i]);
-
-  /* key schedule */
-
-  for(i = 5 ; i >= 0; i--)
-    {
-      /* 64 bits permutation */
-      for(j = 0; j < 64; j++)
-	{
-	  unsigned int	p = csa_key_perm[j];
-	  uint8_t	x;
-
-	  /* extract bit */
-	  x = ((s[i + 1][j / 8] >> (j % 8)) & 1);
-
-	  /* write bit */
-	  s[i][p / 8] |= x << (p % 8);
-	}
-    }
-
-  for(i = 0; i < 7; i++)
-    for(j = 0; j < 8; j++)
-      key->sch[i * 8 + j] = i ^ s[i][j];
+  dvbcsa_key_schedule_block(cw, key->sch);
 }
 
 static const uint8_t		csa_block_perm[256] =
