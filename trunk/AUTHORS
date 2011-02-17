@@ -8,3 +8,5 @@ Alexandre Becoulet <alexandre.becoulet@free.fr>.
 
 PowerPC Altivec support by Nicolas Pouillon <nipo@ssji.net>.
 
+Key schedule optimization by Erik Tews <e_tews at cdc.informatik.tu-darmstadt.de>
+

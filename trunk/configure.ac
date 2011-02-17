@@ -1,4 +1,4 @@
-AC_INIT(libdvbcsa, 1.0.1)
+AC_INIT(libdvbcsa, 1.1.0)
 AC_PREREQ(2.50)
 
 AC_ARG_ENABLE(debug, AC_HELP_STRING(--enable-debug, [Enable debug]), enable_debug=$enableval, enable_debug=no)
@@ -15,7 +15,7 @@ AC_ARG_ENABLE(mmx, AC_HELP_STRING(--enable-mmx, [Use MMX for bitslice]), mmx_deb
 AC_ARG_ENABLE(sse2, AC_HELP_STRING(--enable-sse2, [Use SSE2 for bitslice]), sse2_debug=$enableval, enable_sse2=no)
 AC_ARG_ENABLE(altivec, AC_HELP_STRING(--enable-altivec, [Use AltiVec for bitslice]), altivec_debug=$enableval, enable_altivec=no)
 
-AM_INIT_AUTOMAKE(libdvbcsa, 1.0.1)
+AM_INIT_AUTOMAKE(libdvbcsa, 1.1.0)
 AM_CONFIG_HEADER(config.h)
 
 AC_PROG_CC
