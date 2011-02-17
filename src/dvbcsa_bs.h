@@ -49,22 +49,8 @@
 
 struct dvbcsa_bs_key_s
 {
-  dvbcsa_bs_word_t	kkmulti[DVBCSA_KEYSBUFF_SIZE];
-
-  // [byte][bit:0=LSB,7=MSB]
-  dvbcsa_bs_word_t	ck_g[8][8];
-  // [0 for A1][0 for LSB]
-  dvbcsa_bs_word_t	iA_g[8][4];
-  // [0 for B1][0 for LSB]
-  dvbcsa_bs_word_t	iB_g[8][4];
-
-  // iA[0] is for A1, iA[7] is for A8
-  uint32_t		iA[8];
-  // iB[0] is for B1, iB[7] is for B8
-  uint32_t		iB[8];
-
-  dvbcsa_keys_t		kk;
-  dvbcsa_cw_t		ck;
+  dvbcsa_bs_word_t	block[DVBCSA_KEYSBUFF_SIZE];
+  dvbcsa_bs_word_t	stream[DVBCSA_CWBITS_SIZE];
 }
 #ifdef __GNUC__
   __attribute__ ((aligned(sizeof(dvbcsa_bs_word_t))))

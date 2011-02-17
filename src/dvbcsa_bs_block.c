@@ -39,7 +39,7 @@ dvbcsa_bs_block_sbox(dvbcsa_bs_word_t *w)
 
 
 DVBCSA_INLINE static inline void
-dvbcsa_bs_block_decrypt_register (const dvbcsa_bs_word_t *kkmulti, dvbcsa_bs_word_t *r)
+dvbcsa_bs_block_decrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_t *r)
 {
   int	i, g;
 
@@ -54,7 +54,7 @@ dvbcsa_bs_block_decrypt_register (const dvbcsa_bs_word_t *kkmulti, dvbcsa_bs_wor
 
       for (g = 0; g < 8; g++)
 	{
-	  dvbcsa_bs_word_t sbox_out = BS_XOR(kkmulti[i], r6_N[g]);
+	  dvbcsa_bs_word_t sbox_out = BS_XOR(block[i], r6_N[g]);
 
 	  dvbcsa_bs_block_sbox(&sbox_out);
 
@@ -88,7 +88,7 @@ dvbcsa_bs_block_decrypt_block(const struct dvbcsa_bs_key_s *key,
   dvbcsa_bs_word_t	r[8 * (8 + 56)];
 
   dvbcsa_bs_block_transpose_in(r + 8 * 56, pcks, offset);
-  dvbcsa_bs_block_decrypt_register(key->kkmulti, r);
+  dvbcsa_bs_block_decrypt_register(key->block, r);
   dvbcsa_bs_block_transpose_out(r, pcks, offset);
 }
 
@@ -116,7 +116,7 @@ void dvbcsa_bs_block_decrypt_batch(const struct dvbcsa_bs_key_s *key,
 }
 
 DVBCSA_INLINE static inline void
-dvbcsa_bs_block_encrypt_register (const dvbcsa_bs_word_t *kkmulti, dvbcsa_bs_word_t *r)
+dvbcsa_bs_block_encrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_t *r)
 {
   int	i, g;
 
@@ -129,7 +129,7 @@ dvbcsa_bs_block_encrypt_register (const dvbcsa_bs_word_t *kkmulti, dvbcsa_bs_wor
 
       for (g = 0; g < 8; g++)
 	{
-	  dvbcsa_bs_word_t sbox_out = BS_XOR(kkmulti[i], r7_N[g]);
+	  dvbcsa_bs_word_t sbox_out = BS_XOR(block[i], r7_N[g]);
 
 	  dvbcsa_bs_block_sbox(&sbox_out);
 
@@ -163,7 +163,7 @@ dvbcsa_bs_block_encrypt_block(const struct dvbcsa_bs_key_s *key,
   dvbcsa_bs_word_t	r[8 * (8 + 56)];
 
   dvbcsa_bs_block_transpose_in(r, pcks, offset);
-  dvbcsa_bs_block_encrypt_register(key->kkmulti, r);
+  dvbcsa_bs_block_encrypt_register(key->block, r);
   dvbcsa_bs_block_transpose_out(r + 8 * 56, pcks, offset);
 }
 

@@ -61,6 +61,7 @@ void worddump (const char *str, const void *data, size_t len, size_t ws);
 
 #define DVBCSA_DATA_SIZE	8
 #define DVBCSA_KEYSBUFF_SIZE	56
+#define DVBCSA_CWBITS_SIZE	64
 
 typedef uint8_t			dvbcsa_block_t[DVBCSA_DATA_SIZE];
 typedef uint8_t			dvbcsa_keys_t[DVBCSA_KEYSBUFF_SIZE];
@@ -79,6 +80,8 @@ void dvbcsa_block_encrypt (const dvbcsa_keys_t key, const dvbcsa_block_t in, dvb
 
 void dvbcsa_stream_xor (const dvbcsa_cw_t cw, const dvbcsa_block_t iv,
 			uint8_t *stream, unsigned int len);
+
+void dvbcsa_key_schedule_block(const dvbcsa_cw_t cw, uint8_t * kk);
 
 DVBCSA_INLINE static inline void
 dvbcsa_xor_64 (uint8_t *b, const uint8_t *a)
@@ -134,6 +137,24 @@ dvbcsa_store_le32(uint8_t *p, const uint32_t w)
   /* target support non aligned le memory access */
   *(uint32_t*)p = w;
 #else
+  p[3] = (w >> 24);
+  p[2] = (w >> 16);
+  p[1] = (w >> 8);
+  p[0] = (w);
+#endif
+}
+
+DVBCSA_INLINE static inline void
+dvbcsa_store_le64(uint8_t *p, const uint64_t w)
+{
+#if defined(__i386__) || defined(__x86_64__)
+  /* target support non aligned le memory access */
+  *(uint64_t*)p = w;
+#else
+  p[7] = (w >> 56);
+  p[6] = (w >> 48);
+  p[5] = (w >> 40);
+  p[4] = (w >> 32);
   p[3] = (w >> 24);
   p[2] = (w >> 16);
   p[1] = (w >> 8);
