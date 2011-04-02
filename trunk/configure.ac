@@ -6,7 +6,7 @@ AC_ARG_ENABLE(debug, AC_HELP_STRING(--enable-debug, [Enable debug]), enable_debu
 if test "$enable_debug" = "yes" ; then
     GCC_CFLAGS="$CFLAGS -g -DDVBCSA_DEBUG -D_XOPEN_SOURCE=600"
 else
-    GCC_CFLAGS="$CFLAGS -O2 -fexpensive-optimizations -funroll-loops -fomit-frame-pointer -D_XOPEN_SOURCE=600"
+    GCC_CFLAGS="$CFLAGS -O3 -fomit-frame-pointer -D_XOPEN_SOURCE=600"
 fi
 
 AC_ARG_ENABLE(uint32, AC_HELP_STRING(--enable-uint32, [Use native 32 bits integers for bitslice]), enable_uint32=$enableval, enable_uint32=no)
