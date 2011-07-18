@@ -38,7 +38,7 @@ typedef unsigned char		dvbcsa_cw_t[8];
 typedef struct dvbcsa_key_s	dvbcsa_key_t;
 
 /** allocate a new csa key context */
-struct dvbcsa_key_s * dvbcsa_key_alloc();
+struct dvbcsa_key_s * dvbcsa_key_alloc(void);
 
 /** free a csa key context */
 
@@ -76,7 +76,7 @@ typedef struct dvbcsa_bs_key_s	dvbcsa_bs_key_t;
 
 /** allocate a new csa bitslice key context */
 
-struct dvbcsa_bs_key_s * dvbcsa_bs_key_alloc();
+struct dvbcsa_bs_key_s * dvbcsa_bs_key_alloc(void);
 
 /** free a csa bitslice key context */
 
