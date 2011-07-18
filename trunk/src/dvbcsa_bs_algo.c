@@ -74,7 +74,7 @@ void dvbcsa_bs_encrypt(const struct dvbcsa_bs_key_s *key,
   BS_EMPTY ();			// restore CPU multimedia state
 }
 
-struct dvbcsa_bs_key_s * dvbcsa_bs_key_alloc()
+struct dvbcsa_bs_key_s * dvbcsa_bs_key_alloc(void)
 {
   void *p;
 
