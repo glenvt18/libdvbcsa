@@ -26,22 +26,11 @@
 #include "dvbcsa/dvbcsa.h"
 #include "dvbcsa_bs.h"
 
-DVBCSA_INLINE static inline void
-dvbcsa_bs_block_sbox(dvbcsa_bs_word_t *w)
-{
-  // table lookup, works one byte at a time
-  uint8_t *si = (uint8_t *)w;
-  int i;
-
-  for (i = 0; i < BS_BATCH_BYTES; i++)
-    si[i] = dvbcsa_block_sbox[si[i]];
-}
-
 
 DVBCSA_INLINE static inline void
 dvbcsa_bs_block_decrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_t *r)
 {
-  int	i, g;
+  int	i, j, g;
 
   r += 8 * 56;
 
@@ -54,9 +43,17 @@ dvbcsa_bs_block_decrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_
 
       for (g = 0; g < 8; g++)
 	{
-	  dvbcsa_bs_word_t sbox_out = BS_XOR(block[i], r6_N[g]);
+	  union {
+	    dvbcsa_bs_word_t so;
+	    uint8_t si[BS_BATCH_BYTES];
+	  } u;
 
-	  dvbcsa_bs_block_sbox(&sbox_out);
+	  u.so = BS_XOR(block[i], r6_N[g]);
+
+	  for (j = 0; j < BS_BATCH_BYTES; j++)
+	    u.si[j] = dvbcsa_block_sbox[u.si[j]];
+
+	  dvbcsa_bs_word_t sbox_out = u.so;
 
 	  // bit permutation
 
@@ -118,7 +115,7 @@ void dvbcsa_bs_block_decrypt_batch(const struct dvbcsa_bs_key_s *key,
 DVBCSA_INLINE static inline void
 dvbcsa_bs_block_encrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_t *r)
 {
-  int	i, g;
+  int	i, j, g;
 
   // loop over kk[55]..kk[0]
   for (i = 0; i < 56; i++)
@@ -129,9 +126,17 @@ dvbcsa_bs_block_encrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_
 
       for (g = 0; g < 8; g++)
 	{
-	  dvbcsa_bs_word_t sbox_out = BS_XOR(block[i], r7_N[g]);
+	  union {
+	    dvbcsa_bs_word_t so;
+	    uint8_t si[BS_BATCH_BYTES];
+	  } u;
 
-	  dvbcsa_bs_block_sbox(&sbox_out);
+	  u.so = BS_XOR(block[i], r7_N[g]);
+
+	  for (j = 0; j < BS_BATCH_BYTES; j++)
+	    u.si[j] = dvbcsa_block_sbox[u.si[j]];
+
+	  dvbcsa_bs_word_t sbox_out = u.so;
 
 	  // bit permutation
 
