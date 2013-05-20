@@ -39,7 +39,6 @@ typedef uint32_t dvbcsa_bs_word_t;
 #define BS_AND(a, b)	((a) & (b))
 #define BS_OR(a, b)	((a) | (b))
 #define BS_XOR(a, b)	((a) ^ (b))
-#define BS_XOREQ(a, b)	((a) ^= (b))
 #define BS_NOT(a)	(~(a))
 
 #define BS_SHL(a, n)	((a) << (n))

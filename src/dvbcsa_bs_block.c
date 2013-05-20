@@ -26,6 +26,7 @@
 #include "dvbcsa/dvbcsa.h"
 #include "dvbcsa_bs.h"
 
+#define BS_XOREQ(a, b)	do { dvbcsa_bs_word_t *_t = &(a); *_t = BS_XOR(*_t, (b)); } while (0)
 
 DVBCSA_INLINE static inline void
 dvbcsa_bs_block_decrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_t *r)

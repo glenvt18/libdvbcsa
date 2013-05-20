@@ -86,7 +86,6 @@ static DVBCSA_INLINE dvbcsa_bs_word_t get_bs_val8( uint8_t val, dvbcsa_bs_word_t
 #define BS_AND(a, b)	vec_and((a), (b))
 #define BS_OR(a, b)	vec_or((a), (b))
 #define BS_XOR(a, b)	vec_xor((a), (b))
-#define BS_XOREQ(a, b)	{ dvbcsa_bs_word_t *_t = &(a); *_t = vec_xor(*_t, (b)); }
 #define BS_NOT(a)	vec_nor((a), (a))
 
 #define SHVAL_1 BS_VAL8(01)
