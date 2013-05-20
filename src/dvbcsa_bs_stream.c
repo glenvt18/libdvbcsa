@@ -26,7 +26,7 @@
 #include "dvbcsa/dvbcsa.h"
 #include "dvbcsa_bs.h"
 
-static void DVBCSA_INLINE
+static void DVBCSA_INLINE inline
 dvbcsa_bs_stream_sbox1(dvbcsa_bs_word_t fa, dvbcsa_bs_word_t fb,
 		       dvbcsa_bs_word_t fc, dvbcsa_bs_word_t fd,
 		       dvbcsa_bs_word_t fe,
@@ -43,7 +43,7 @@ dvbcsa_bs_stream_sbox1(dvbcsa_bs_word_t fa, dvbcsa_bs_word_t fb,
   *sb = BS_XOR (tmp2, BS_AND (fe, tmp3));
 }
 
-static void DVBCSA_INLINE
+static void DVBCSA_INLINE inline
 dvbcsa_bs_stream_sbox2(dvbcsa_bs_word_t fa, dvbcsa_bs_word_t fb,
 		       dvbcsa_bs_word_t fc, dvbcsa_bs_word_t fd,
 		       dvbcsa_bs_word_t fe,
@@ -60,7 +60,7 @@ dvbcsa_bs_stream_sbox2(dvbcsa_bs_word_t fa, dvbcsa_bs_word_t fb,
   *sb = BS_XOR (tmp2, BS_AND (fe, tmp3));
 }
 
-static void DVBCSA_INLINE
+static void DVBCSA_INLINE inline
 dvbcsa_bs_stream_sbox3(dvbcsa_bs_word_t fa, dvbcsa_bs_word_t fb,
 		       dvbcsa_bs_word_t fc, dvbcsa_bs_word_t fd,
 		       dvbcsa_bs_word_t fe,
@@ -76,7 +76,7 @@ dvbcsa_bs_stream_sbox3(dvbcsa_bs_word_t fa, dvbcsa_bs_word_t fb,
   *sb = BS_XOR (tmp2, fe);
 }
 
-static void DVBCSA_INLINE
+static void DVBCSA_INLINE inline
 dvbcsa_bs_stream_sbox4(dvbcsa_bs_word_t fa, dvbcsa_bs_word_t fb,
 		       dvbcsa_bs_word_t fc, dvbcsa_bs_word_t fd,
 		       dvbcsa_bs_word_t fe,
@@ -92,7 +92,7 @@ dvbcsa_bs_stream_sbox4(dvbcsa_bs_word_t fa, dvbcsa_bs_word_t fb,
   *sb = BS_XOR (BS_XOR (*sa, tmp2), fe);
 }
 
-static void DVBCSA_INLINE
+static void DVBCSA_INLINE inline
 dvbcsa_bs_stream_sbox5(dvbcsa_bs_word_t fa, dvbcsa_bs_word_t fb,
 		       dvbcsa_bs_word_t fc, dvbcsa_bs_word_t fd,
 		       dvbcsa_bs_word_t fe,
@@ -109,7 +109,7 @@ dvbcsa_bs_stream_sbox5(dvbcsa_bs_word_t fa, dvbcsa_bs_word_t fb,
   *sb = BS_XOR (tmp2, BS_AND (fe, tmp3));
 }
 
-static void DVBCSA_INLINE
+static void DVBCSA_INLINE inline
 dvbcsa_bs_stream_sbox6(dvbcsa_bs_word_t fa, dvbcsa_bs_word_t fb,
 		       dvbcsa_bs_word_t fc, dvbcsa_bs_word_t fd,
 		       dvbcsa_bs_word_t fe,
@@ -126,7 +126,7 @@ dvbcsa_bs_stream_sbox6(dvbcsa_bs_word_t fa, dvbcsa_bs_word_t fb,
   *sb = BS_XOR (tmp2, BS_AND (fe, tmp3));
 }
 
-static void DVBCSA_INLINE
+static void DVBCSA_INLINE inline
 dvbcsa_bs_stream_sbox7(dvbcsa_bs_word_t fa, dvbcsa_bs_word_t fb,
 		       dvbcsa_bs_word_t fc, dvbcsa_bs_word_t fd,
 		       dvbcsa_bs_word_t fe,
