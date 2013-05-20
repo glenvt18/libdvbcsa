@@ -16,7 +16,7 @@ AC_ARG_ENABLE(sse2, AC_HELP_STRING(--enable-sse2, [Use SSE2 for bitslice]), sse2
 AC_ARG_ENABLE(altivec, AC_HELP_STRING(--enable-altivec, [Use AltiVec for bitslice]), altivec_debug=$enableval, enable_altivec=no)
 
 AM_INIT_AUTOMAKE(libdvbcsa, 1.1.0)
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS(config.h)
 
 AC_PROG_CC
 
