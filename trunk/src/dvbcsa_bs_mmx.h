@@ -42,7 +42,6 @@ typedef __m64 dvbcsa_bs_word_t;
 #define BS_AND(a, b)	_m_pand((a), (b))
 #define BS_OR(a, b)	_m_por((a), (b))
 #define BS_XOR(a, b)	_m_pxor ((a), (b))
-#define BS_XOREQ(a, b)	{ dvbcsa_bs_word_t *_t = &(a); *_t = _m_pxor(*_t, (b)); }
 #define BS_NOT(a)	_m_pxor ((a), BS_VAL8(ff))
 
 #define BS_SHL(a, n)	_m_psllqi((a), n)

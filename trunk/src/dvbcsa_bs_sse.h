@@ -43,7 +43,6 @@ typedef __m128i dvbcsa_bs_word_t;
 #define BS_AND(a, b)	_mm_and_si128((a), (b))
 #define BS_OR(a, b)	_mm_or_si128((a), (b))
 #define BS_XOR(a, b)	_mm_xor_si128((a), (b))
-#define BS_XOREQ(a, b)	{ dvbcsa_bs_word_t *_t = &(a); *_t = _mm_xor_si128(*_t, (b)); }
 #define BS_NOT(a)	_mm_andnot_si128((a), BS_VAL8(ff))
 
 #define BS_SHL(a, n)	_mm_slli_epi64(a, n)

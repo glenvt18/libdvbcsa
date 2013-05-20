@@ -204,13 +204,6 @@ main		(void)
   c = BS_XOR(a, b);
   vec_testeq(BS_VAL8(45), c);
 
-  /* test XOREQ */
-
-  a = BS_VAL8(5a);
-  b = BS_VAL8(1f);
-  BS_XOREQ(b, a);
-  vec_testeq(BS_VAL8(45), b);
-
   /* test NOT */
 
   a = BS_VAL8(5a);
