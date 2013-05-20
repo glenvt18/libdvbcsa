@@ -148,8 +148,8 @@ dvbcsa_bs_stream_cipher_batch(const struct dvbcsa_bs_key_s *key,
 			      const struct dvbcsa_bs_batch_s *pcks,
 			      unsigned int maxlen)
 {
-  dvbcsa_bs_word_t A[32 + 10][4];	// 32 because we will move back (virtual shift register)
-  dvbcsa_bs_word_t B[32 + 10][4];	// 32 because we will move back (virtual shift register)
+  dvbcsa_bs_word_t A[10][4];
+  dvbcsa_bs_word_t B[10][4];
   dvbcsa_bs_word_t X[4];
   dvbcsa_bs_word_t Y[4];
   dvbcsa_bs_word_t Z[4];
