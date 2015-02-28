@@ -27,6 +27,10 @@
 #ifndef LIBDVBCSA_H_
 #define LIBDVBCSA_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* csa control word */
 typedef unsigned char		dvbcsa_cw_t[8];
 
@@ -107,6 +111,10 @@ void dvbcsa_bs_decrypt(const struct dvbcsa_bs_key_s *key,
 void dvbcsa_bs_encrypt(const struct dvbcsa_bs_key_s *key,
 		       const struct dvbcsa_bs_batch_s *pcks,
 		       unsigned int maxlen);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
