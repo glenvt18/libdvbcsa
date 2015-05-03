@@ -31,32 +31,48 @@
 DVBCSA_INLINE static inline void
 dvbcsa_bs_block_decrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_t *r)
 {
-  int	i, j, g;
+  dvbcsa_bs_word_t scratch1[8];
+  dvbcsa_bs_word_t scratch2[8];
+  int i, j, g;
 
   r += 8 * 56;
 
-  // loop over kk[55]..kk[0]
+  /* loop over kk[55]..kk[0] */
   for (i = 55; i >= 0; i--)
     {
       dvbcsa_bs_word_t *r6_N = r + 8 * 6;
 
-      r -= 8;	/* virtual shift of registers */
+      r -= 8;   /* virtual shift of registers */
 
       for (g = 0; g < 8; g++)
-	{
-	  union {
-	    dvbcsa_bs_word_t so;
-	    uint8_t si[BS_BATCH_BYTES];
-	  } u;
+        scratch1[g] = BS_XOR(block[i], r6_N[g]);
 
-	  u.so = BS_XOR(block[i], r6_N[g]);
+      /* sbox */
+      {
+      uint8_t *p1, *p2;
+      uint8_t a, b, c, d;
 
-	  for (j = 0; j < BS_BATCH_BYTES; j++)
-	    u.si[j] = dvbcsa_block_sbox[u.si[j]];
+      p1 = (uint8_t *)scratch1;
+      p2 = (uint8_t *)scratch2;
+      for (j = 0; j < BS_BATCH_BYTES * 8; j += 4)
+        {
+          a = p1[j + 0];
+          b = p1[j + 1];
+          c = p1[j + 2];
+          d = p1[j + 3];
+          p2[j + 0] = dvbcsa_block_sbox[a];
+          p2[j + 1] = dvbcsa_block_sbox[b];
+          p2[j + 2] = dvbcsa_block_sbox[c];
+          p2[j + 3] = dvbcsa_block_sbox[d];
+        }
+      }
 
-	  dvbcsa_bs_word_t sbox_out = u.so;
+      for (g = 0; g < 8; g++)
+        {
+          dvbcsa_bs_word_t sbox_out = scratch2[g];
+          dvbcsa_bs_word_t w;
 
-	  // bit permutation
+          /* bit permutation */
 
 	  dvbcsa_bs_word_t in = BS_OR(
 				      BS_OR(
@@ -67,8 +83,7 @@ dvbcsa_bs_block_decrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_
 				      BS_OR(       BS_SHR (BS_AND (sbox_out, BS_VAL8(40)), 6),
 					           BS_SHR (BS_AND (sbox_out, BS_VAL8(80)), 4)));
 
-	  dvbcsa_bs_word_t w = BS_XOR(r[8 * 8 + g], sbox_out);
-
+          w = BS_XOR(r[8 * 8 + g], sbox_out);
 	  r[8 * 0 + g] = w;
 	  BS_XOREQ(r[8 * 2 + g], w);
 	  BS_XOREQ(r[8 * 3 + g], w);
@@ -116,30 +131,46 @@ void dvbcsa_bs_block_decrypt_batch(const struct dvbcsa_bs_key_s *key,
 DVBCSA_INLINE static inline void
 dvbcsa_bs_block_encrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_t *r)
 {
-  int	i, j, g;
+  dvbcsa_bs_word_t scratch1[8];
+  dvbcsa_bs_word_t scratch2[8];
+  int i, j, g;
 
-  // loop over kk[55]..kk[0]
+  /* loop over kk[55]..kk[0] */
   for (i = 0; i < 56; i++)
     {
       dvbcsa_bs_word_t *r7_N = r + 8 * 7;
 
-      r += 8;	/* virtual shift of registers */
+      r += 8;   /* virtual shift of registers */
 
       for (g = 0; g < 8; g++)
-	{
-	  union {
-	    dvbcsa_bs_word_t so;
-	    uint8_t si[BS_BATCH_BYTES];
-	  } u;
+          scratch1[g] = BS_XOR(block[i], r7_N[g]);
 
-	  u.so = BS_XOR(block[i], r7_N[g]);
+      /* sbox */
+      {
+      uint8_t *p1, *p2;
+      uint8_t a, b, c, d;
 
-	  for (j = 0; j < BS_BATCH_BYTES; j++)
-	    u.si[j] = dvbcsa_block_sbox[u.si[j]];
+      p1 = (uint8_t *)scratch1;
+      p2 = (uint8_t *)scratch2;
+      for (j = 0; j < BS_BATCH_BYTES * 8; j += 4)
+        {
+          a = p1[j + 0];
+          b = p1[j + 1];
+          c = p1[j + 2];
+          d = p1[j + 3];
+          p2[j + 0] = dvbcsa_block_sbox[a];
+          p2[j + 1] = dvbcsa_block_sbox[b];
+          p2[j + 2] = dvbcsa_block_sbox[c];
+          p2[j + 3] = dvbcsa_block_sbox[d];
+        }
+      }
 
-	  dvbcsa_bs_word_t sbox_out = u.so;
+      for (g = 0; g < 8; g++)
+        {
+          dvbcsa_bs_word_t sbox_out = scratch2[g];
+          dvbcsa_bs_word_t w = r[-8 * 1 + g];
 
-	  // bit permutation
+          /* bit permutation */
 
 	  dvbcsa_bs_word_t in = BS_OR(
 				      BS_OR(
@@ -150,7 +181,6 @@ dvbcsa_bs_block_encrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_
 				      BS_OR(       BS_SHR (BS_AND (sbox_out, BS_VAL8(40)), 6),
 					           BS_SHR (BS_AND (sbox_out, BS_VAL8(80)), 4)));
 
-	  dvbcsa_bs_word_t w = r[-8 * 1 + g];
 
 	  r[8 * 7 + g] = BS_XOR(w, sbox_out);
 	  BS_XOREQ(r[8 * 1 + g], w);
