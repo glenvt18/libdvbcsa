@@ -43,6 +43,9 @@
 #elif defined(DVBCSA_USE_ALTIVEC)
 # include "dvbcsa_bs_altivec.h"
 
+#elif defined(DVBCSA_USE_NEON)
+# include "dvbcsa_bs_neon.h"
+
 #else
 # error No dvbcsa word size defined
 #endif

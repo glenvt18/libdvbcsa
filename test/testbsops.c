@@ -248,17 +248,30 @@ main		(void)
   vec_testeq(b, c);
 
   a = BS_VAL(0xaaaaaaaaaaaaaaaaLL, 0x5555555555555555LL);
+  /* there is no neon instruction to shift a whole register */
+#ifdef DVBCSA_USE_NEON
+  b = BS_VAL(0xaaaaaaaaaaaaaa00LL, 0x5555555555555500LL);
+#else
   b = BS_VAL(0xaaaaaaaaaaaaaa55LL, 0x5555555555555500LL);
+#endif
   c = BS_SHL8(a, 1);
   vec_testeq(b, c);
 
   a = BS_VAL(0xffffffffffffffffLL, 0xffffffffffffffffLL);
+#ifdef DVBCSA_USE_NEON
+  b = BS_VAL(0xffffffffffffff00LL, 0xffffffffffffff00LL);
+#else
   b = BS_VAL(0xffffffffffffffffLL, 0xffffffffffffff00LL);
+#endif
   c = BS_SHL8(a, 1);
   vec_testeq(b, c);
 
   a = BS_VAL(0xffffffffffffffffLL, 0xffffffffffffffffLL);
+#ifdef DVBCSA_USE_NEON
+  b = BS_VAL(0xffffffff00000000LL, 0xffffffff00000000LL);
+#else
   b = BS_VAL(0xffffffffffffffffLL, 0xffffffff00000000LL);
+#endif
   c = BS_SHL8(a, 4);
   vec_testeq(b, c);
 
@@ -270,22 +283,38 @@ main		(void)
   vec_testeq(b, c);
 
   a = BS_VAL(0xaaaaaaaaaaaaaaaaLL, 0x5555555555555555LL);
+#ifdef DVBCSA_USE_NEON
+  b = BS_VAL(0x00aaaaaaaaaaaaaaLL, 0x0055555555555555LL);
+#else
   b = BS_VAL(0x00aaaaaaaaaaaaaaLL, 0xaa55555555555555LL);
+#endif
   c = BS_SHR8(a, 1);
   vec_testeq(b, c);
 
   a = BS_VAL(0xffffffffffffffffLL, 0xffffffffffffffffLL);
+#ifdef DVBCSA_USE_NEON
+  b = BS_VAL(0x00ffffffffffffffLL, 0x00ffffffffffffffLL);
+#else
   b = BS_VAL(0x00ffffffffffffffLL, 0xffffffffffffffffLL);
+#endif
   c = BS_SHR8(a, 1);
   vec_testeq(b, c);
 
   a = BS_VAL(0xffffffffffffffffLL, 0xffffffffffffffffLL);
+#ifdef DVBCSA_USE_NEON
+  b = BS_VAL(0x00000000ffffffffLL, 0x00000000ffffffffLL);
+#else
   b = BS_VAL(0x00000000ffffffffLL, 0xffffffffffffffffLL);
+#endif
   c = BS_SHR8(a, 4);
   vec_testeq(b, c);
 
   a = BS_VAL(0xffffffffffffffffLL, 0xffffffffffffffffLL);
+#ifdef DVBCSA_USE_NEON
+  b = BS_VAL(0x000000ffffffffffLL, 0x000000ffffffffffLL);
+#else
   b = BS_VAL(0x000000ffffffffffLL, 0xffffffffffffffffLL);
+#endif
   c = BS_SHR8(a, 3);
   vec_testeq(b, c);
 
