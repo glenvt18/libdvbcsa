@@ -37,7 +37,7 @@ dvbcsa_bs_stream_cipher_batch(const struct dvbcsa_bs_key_s *key,
 			      const struct dvbcsa_bs_batch_s *pcks,
 			      unsigned int maxlen)
 {
-  struct dvbcsa_bs_stream_regs_s regs __attribute__ ((aligned (BS_BATCH_BYTES)));
+  struct dvbcsa_bs_stream_regs_s regs;
 
   int i, b;
   unsigned int h;
