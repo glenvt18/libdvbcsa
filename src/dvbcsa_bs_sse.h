@@ -29,6 +29,10 @@
 #include <xmmintrin.h>
 #include <emmintrin.h>
 
+#ifdef DVBCSA_USE_SSSE3
+#include <tmmintrin.h>
+#endif
+
 typedef __m128i dvbcsa_bs_word_t;
 
 #define BS_BATCH_SIZE 128
@@ -54,4 +58,19 @@ typedef __m128i dvbcsa_bs_word_t;
 
 #define BS_EMPTY()
 
+#ifdef DVBCSA_USE_SSSE3
+/* block cipher 2-word load with byte-deinterleaving */
+#define BS_LOAD_DEINTERLEAVE_8(ptr, var_lo, var_hi) \
+      {\
+      dvbcsa_bs_word_t a, b; \
+      a = _mm_load_si128((ptr)); \
+      b = _mm_load_si128((ptr) + 1); \
+      a = _mm_shuffle_epi8(a, _mm_set_epi8(15,13,11,9,7,5,3,1,14,12,10,8,6,4,2,0)); \
+      b = _mm_shuffle_epi8(b, _mm_set_epi8(15,13,11,9,7,5,3,1,14,12,10,8,6,4,2,0)); \
+      var_lo = _mm_unpacklo_epi64(a, b); \
+      var_hi = _mm_unpackhi_epi64(a, b); \
+      }
 #endif
+
+#endif
+
