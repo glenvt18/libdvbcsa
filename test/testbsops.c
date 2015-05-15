@@ -318,6 +318,36 @@ main		(void)
   c = BS_SHR8(a, 3);
   vec_testeq(b, c);
 
+#ifdef BS_LOAD_DEINTERLEAVE_8
+
+  /* test BS_LOAD_DEINTERLEAVE_8 */
+
+  {
+  /* block cipher sbox + perm */
+  dvbcsa_bs_word_t d, buf_in[2], buf_out[4];
+  int i;
+  uint8_t *src, *dst;
+
+  a = BS_VAL(0x0001020304050607LL, 0x08090a0b0c0d0e0fLL);
+  b = BS_VAL(0x8f8e8d8c8b8a8988LL, 0x8786858483828180LL);
+  buf_in[0] = a;
+  buf_in[1] = b;
+  src = (uint8_t *)buf_in;
+  dst = (uint8_t *)buf_out;
+  for (i = 0; i < BS_BATCH_BYTES * 2; i++)
+    {
+      dst[i * 2] = src[i];
+      dst[i * 2 + 1] = src[i] + 0x10;
+    }
+  BS_LOAD_DEINTERLEAVE_8(buf_out, c, d);
+  vec_testeq(a, c);
+  vec_testeq(BS_OR(a, BS_VAL8(10)), d);
+  BS_LOAD_DEINTERLEAVE_8(buf_out + 2, c, d);
+  vec_testeq(b, c);
+  vec_testeq(BS_OR(b, BS_VAL8(10)), d);
+  }
+#endif
+
 #endif
 
   puts("Ok");
