@@ -32,23 +32,26 @@ AC_C_CONST
 AC_C_INLINE
 AC_CHECK_SIZEOF(long)
 
+AC_C_BIGENDIAN(
+ AC_DEFINE(DVBCSA_ENDIAN_BIG, 1, [Target is big-endian]),
+ AC_DEFINE(DVBCSA_ENDIAN_LITTLE, 1, [Target is little-endian]),
+ AC_MSG_ERROR(unknown endianess),
+ AC_MSG_ERROR(universial endianess not supported)
+)
+
 if test "$enable_mmx" = "yes" ; then
-     transpose_64=yes
      AC_DEFINE(DVBCSA_USE_MMX, 1, Using MMX bitslice.)
      GCC_CFLAGS="$GCC_CFLAGS -mmmx"
 
 elif test "$enable_sse2" = "yes" ; then
-     transpose_128=yes
      AC_DEFINE(DVBCSA_USE_SSE, 1, Using SSE2 bitslice.)
      GCC_CFLAGS="$GCC_CFLAGS -msse -msse2"
 
 elif test "$enable_altivec" = "yes" ; then
-     transpose_128=yes
      AC_DEFINE(DVBCSA_USE_ALTIVEC, 1, Using AltiVec bitslice.)
      GCC_CFLAGS="$GCC_CFLAGS -maltivec -mabi=altivec"
 
 elif test "$enable_neon" = "yes" ; then
-     transpose_128=yes
      AC_DEFINE(DVBCSA_USE_NEON, 1, Using NEON bitslice.)
      GCC_CFLAGS="$GCC_CFLAGS -mfpu=neon"
 
@@ -57,13 +60,11 @@ elif test "$enable_uint32" = "yes" ; then
      AC_DEFINE(DVBCSA_USE_UINT32, 1, Using 32 bits integer bitslice.)
 
 elif test "$enable_uint64" = "yes" ; then
-     transpose_64=yes
      AC_DEFINE(DVBCSA_USE_UINT64, 1, Using 64 bits integer bitslice.)
 
 else
      case $ac_cv_sizeof_long in
      	  8)
-	       transpose_64=yes
 	       AC_DEFINE(DVBCSA_USE_UINT64, 1, Using 64 bits integer bitslice.)
 	  ;;
 	  *)
@@ -73,8 +74,6 @@ else
      esac
 fi
 
-AM_CONDITIONAL(TRANSPOSE_128, test "$transpose_128" = "yes")
-AM_CONDITIONAL(TRANSPOSE_64, test "$transpose_64" = "yes")
 AM_CONDITIONAL(TRANSPOSE_32, test "$transpose_32" = "yes")
 
 if test "$GCC" = "yes" ; then

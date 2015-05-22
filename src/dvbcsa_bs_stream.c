@@ -80,9 +80,7 @@ dvbcsa_bs_stream_cipher_batch(const struct dvbcsa_bs_key_s *key,
   for (h = 8; h < maxlen; h += 8)
     {
       dvbcsa_bs_stream_cipher_kernel(&regs);
-      for (i = 0; i < 8; i++)
-          dvbcsa_bs_stream_transpose_out(pcks, h + i, regs.cb + i * 8);
-
+      dvbcsa_bs_stream_transpose_out(pcks, h, regs.cb);
     }
 
 }

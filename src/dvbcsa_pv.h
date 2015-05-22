@@ -83,12 +83,26 @@ void dvbcsa_stream_xor (const dvbcsa_cw_t cw, const dvbcsa_block_t iv,
 
 void dvbcsa_key_schedule_block(const dvbcsa_cw_t cw, uint8_t * kk);
 
+/* target support for 32 and 64 bit unaligned memory access */
+
+#if defined(__i386__) || defined(__x86_64__)
+#define DVBCSA_UNALIGNED_ACCESS_32 1
+#define DVBCSA_UNALIGNED_ACCESS_64 1
+#endif
+
+#if defined(__arm__) && defined(__ARM_FEATURE_UNALIGNED)
+/* only 32 bit unaligned access is allowed for armv6, armv7, armv8 */
+#define DVBCSA_UNALIGNED_ACCESS_32 1
+#endif
+
 DVBCSA_INLINE static inline void
 dvbcsa_xor_64 (uint8_t *b, const uint8_t *a)
 {
-#if defined(__i386__) || defined(__x86_64__)
-  /* target support non aligned memory access */
+#if defined(DVBCSA_UNALIGNED_ACCESS_64)
   *(uint64_t*)b ^= *(uint64_t*)a;
+#elif defined(DVBCSA_UNALIGNED_ACCESS_32)
+  ((uint32_t *)b)[0] ^= ((uint32_t *)a)[0];
+  ((uint32_t *)b)[1] ^= ((uint32_t *)a)[1];
 #else
   unsigned int i;
 
@@ -97,11 +111,55 @@ dvbcsa_xor_64 (uint8_t *b, const uint8_t *a)
 #endif
 }
 
+DVBCSA_INLINE static inline void
+dvbcsa_xor_32 (uint8_t *b, const uint8_t *a)
+{
+#ifdef DVBCSA_UNALIGNED_ACCESS_32
+  /* target supports non aligned memory access */
+  *(uint32_t*)b ^= *(uint32_t*)a;
+#else
+  unsigned int i;
+
+  for (i = 0; i < 4; i++)
+    b[i] ^= a[i];
+#endif
+}
+
+DVBCSA_INLINE static inline void
+dvbcsa_copy_64 (uint8_t *b, const uint8_t *a)
+{
+#if defined(DVBCSA_UNALIGNED_ACCESS_64)
+  *(uint64_t*)b = *(uint64_t*)a;
+#elif defined(DVBCSA_UNALIGNED_ACCESS_32)
+  ((uint32_t *)b)[0] = ((uint32_t *)a)[0];
+  ((uint32_t *)b)[1] = ((uint32_t *)a)[1];
+#else
+  unsigned int i;
+
+  for (i = 0; i < 8; i++)
+    b[i] = a[i];
+#endif
+}
+
+DVBCSA_INLINE static inline void
+dvbcsa_copy_32 (uint8_t *b, const uint8_t *a)
+{
+#ifdef DVBCSA_UNALIGNED_ACCESS_32
+  /* target supports non aligned memory access */
+  *(uint32_t*)b = *(uint32_t*)a;
+#else
+  unsigned int i;
+
+  for (i = 0; i < 4; i++)
+    b[i] = a[i];
+#endif
+}
+
 DVBCSA_INLINE static inline uint32_t
 dvbcsa_load_le32(const uint8_t *p)
 {
-#if defined(__i386__) || defined(__x86_64__)
-  /* target support non aligned le memory access */
+#if defined(DVBCSA_UNALIGNED_ACCESS_32) && defined(DVBCSA_ENDIAN_LITTLE)
+  /* target supports non aligned le memory access */
   return *(uint32_t*)p;
 #else
   return ((uint32_t)p[3] << 24) |
@@ -114,8 +172,8 @@ dvbcsa_load_le32(const uint8_t *p)
 DVBCSA_INLINE static inline uint64_t
 dvbcsa_load_le64(const uint8_t *p)
 {
-#if defined(__i386__) || defined(__x86_64__)
-  /* target support non aligned le memory access */
+#if defined(DVBCSA_UNALIGNED_ACCESS_64) && defined(DVBCSA_ENDIAN_LITTLE)
+  /* target supports non aligned le memory access */
   return *(uint64_t*)p;
 #else
   return (uint64_t)( ((uint64_t)p[7] << 56) |
@@ -133,8 +191,8 @@ dvbcsa_load_le64(const uint8_t *p)
 DVBCSA_INLINE static inline void
 dvbcsa_store_le32(uint8_t *p, const uint32_t w)
 {
-#if defined(__i386__) || defined(__x86_64__)
-  /* target support non aligned le memory access */
+#if defined(DVBCSA_UNALIGNED_ACCESS_32) && defined(DVBCSA_ENDIAN_LITTLE)
+  /* target supports non aligned le memory access */
   *(uint32_t*)p = w;
 #else
   p[3] = (w >> 24);
@@ -147,8 +205,8 @@ dvbcsa_store_le32(uint8_t *p, const uint32_t w)
 DVBCSA_INLINE static inline void
 dvbcsa_store_le64(uint8_t *p, const uint64_t w)
 {
-#if defined(__i386__) || defined(__x86_64__)
-  /* target support non aligned le memory access */
+#if defined(DVBCSA_UNALIGNED_ACCESS_64) && defined(DVBCSA_ENDIAN_LITTLE)
+  /* target supports non aligned le memory access */
   *(uint64_t*)p = w;
 #else
   p[7] = (w >> 56);
