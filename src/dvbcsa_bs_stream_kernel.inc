@@ -239,11 +239,15 @@ dvbcsa_bs_stream_cipher_kernel(struct dvbcsa_bs_stream_regs_s *regs)
           A--;
           B--;
 
+#ifndef DVBCSA_BS_STREAM_KERNEL_INIT
+
           // require 4 loops per output byte
           // 2 output bits are a function of the 4 bits of D
           // xor 2 by 2
-          regs->cb[i * 8 + 7 - 2 * j] = BS_XOR (regs->D[2], regs->D[3]);
-          regs->cb[i * 8 + 6 - 2 * j] = BS_XOR (regs->D[0], regs->D[1]);
+          regs->sb[i * 8 + 7 - 2 * j] = BS_XOR (regs->D[2], regs->D[3]);
+          regs->sb[i * 8 + 6 - 2 * j] = BS_XOR (regs->D[0], regs->D[1]);
+
+#endif
         }  // INTERNAL LOOP
     }   // EXTERNAL LOOP
 

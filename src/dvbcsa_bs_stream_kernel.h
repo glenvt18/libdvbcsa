@@ -13,7 +13,6 @@ struct dvbcsa_bs_stream_regs_s {
   dvbcsa_bs_word_t E[4];
   dvbcsa_bs_word_t F[4];
   dvbcsa_bs_word_t sb[64];
-  dvbcsa_bs_word_t cb[64];
   dvbcsa_bs_word_t p;
   dvbcsa_bs_word_t q;
   dvbcsa_bs_word_t r;
