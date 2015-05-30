@@ -22,6 +22,7 @@
 
 #include <dvbcsa/dvbcsa.h>
 #include "dvbcsa_bs.h"
+#include "dvbcsa_bs_transpose.h"
 
 void _testeq(const int i, uint8_t a, uint8_t b, const char *sa, const char *sb, const char *file, const int line, const char *func)
 {
@@ -349,6 +350,78 @@ main		(void)
 #endif
 
 #endif
+
+  /* test 2x2 matrix transpose */
+
+  {
+  dvbcsa_bs_word_t a, b, c, d;
+
+#if BS_BATCH_SIZE > 32
+  a = BS_VAL64(3132333435363738);
+  b = BS_VAL64(494a4b4c4d4e4f40);
+#ifdef DVBCSA_ENDIAN_LITTLE
+  c = BS_VAL64(4d4e4f4035363738);
+  d = BS_VAL64(494a4b4c31323334);
+#else
+  c = BS_VAL64(31323334494a4b4c);
+  d = BS_VAL64(353637384d4e4f40);
+#endif
+  BS_SWAP32(a, b);
+  vec_testeq(a, c);
+  vec_testeq(b, d);
+#endif
+
+  a = BS_VAL32(12345678);
+  b = BS_VAL32(9abcdef0);
+#ifdef DVBCSA_ENDIAN_LITTLE
+  c = BS_VAL32(def05678);
+  d = BS_VAL32(9abc1234);
+#else
+  c = BS_VAL32(12349abc);
+  d = BS_VAL32(5678def0);
+#endif
+  BS_SWAP16(a, b);
+  vec_testeq(a, c);
+  vec_testeq(b, d);
+
+  a = BS_VAL32(12345678);
+  b = BS_VAL32(9abcdef0);
+#ifdef DVBCSA_ENDIAN_LITTLE
+  c = BS_VAL32(bc34f078);
+  d = BS_VAL32(9a12de56);
+#else
+  c = BS_VAL32(129a56de);
+  d = BS_VAL32(34bc78f0);
+#endif
+  BS_SWAP8(a, b);
+  vec_testeq(a, c);
+  vec_testeq(b, d);
+
+  a = BS_VAL32(12345678);
+  b = BS_VAL32(9abcdef0);
+  c = BS_VAL32(a2c4e608);
+  d = BS_VAL32(91b3d5f7);
+  BS_SWAP4(a, b);
+  vec_testeq(a, c);
+  vec_testeq(b, d);
+
+  a = BS_VAL32(ff00ff00);
+  b = BS_VAL32(00ff00ff);
+  c = BS_VAL32(33cc33cc);
+  d = BS_VAL32(33cc33cc);
+  BS_SWAP2(a, b);
+  vec_testeq(a, c);
+  vec_testeq(b, d);
+
+  a = BS_VAL32(ff00ff00);
+  b = BS_VAL32(00ff00ff);
+  c = BS_VAL32(55aa55aa);
+  d = BS_VAL32(55aa55aa);
+  BS_SWAP1(a, b);
+  vec_testeq(a, c);
+  vec_testeq(b, d);
+
+  }
 
   puts("Ok");
   return 0;
