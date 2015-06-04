@@ -52,5 +52,36 @@ typedef uint64x2_t dvbcsa_bs_word_t;
 
 #define BS_EMPTY()
 
+/* 2x2 matrix transpose */
+#ifdef BS_SWAP32_LE
+#undef BS_SWAP32_LE
+#endif
+#define BS_SWAP32_LE(t, b) \
+    { \
+    uint32x4x2_t tmp = vtrnq_u32(vreinterpretq_u32_u64(t), vreinterpretq_u32_u64(b)); \
+    t = vreinterpretq_u64_u32(tmp.val[0]); \
+    b = vreinterpretq_u64_u32(tmp.val[1]); \
+    }
+
+#ifdef BS_SWAP16_LE
+#undef BS_SWAP16_LE
+#endif
+#define BS_SWAP16_LE(t, b) \
+    { \
+    uint16x8x2_t tmp = vtrnq_u16(vreinterpretq_u16_u64(t), vreinterpretq_u16_u64(b)); \
+    t = vreinterpretq_u64_u16(tmp.val[0]); \
+    b = vreinterpretq_u64_u16(tmp.val[1]); \
+    }
+
+#ifdef BS_SWAP8_LE
+#undef BS_SWAP8_LE
+#endif
+#define BS_SWAP8_LE(t, b) \
+    { \
+    uint8x16x2_t tmp = vtrnq_u8(vreinterpretq_u8_u64(t), vreinterpretq_u8_u64(b)); \
+    t = vreinterpretq_u64_u8(tmp.val[0]); \
+    b = vreinterpretq_u64_u8(tmp.val[1]); \
+    }
+
 #endif
 
