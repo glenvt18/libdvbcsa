@@ -40,8 +40,8 @@ for v in "-1.11" "-1.10" "110" "-1.9" "19" "-1.8" "18" "-1.7" "17" "-1.6" "16" "
 done
 
 if test "${amvers}" = "no" && automake --version > /dev/null 2>&1; then
-  amvers="`automake --version | sed -e '1s/[^0-9]*//' -e q`"
-  if expr "$amvers" "<" "1.5" > /dev/null 2>&1; then
+  amvers="`automake --version | sed -nE '1s/[^0-9]*([0-9]+)\.([0-9]+).*/\1 * 100 + \2/p' | xargs expr`"
+  if expr "$amvers" "<" "105" > /dev/null 2>&1; then
     amvers="no"
   else
     amvers=""
