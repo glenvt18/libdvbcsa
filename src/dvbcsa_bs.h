@@ -57,11 +57,7 @@ struct dvbcsa_bs_key_s
 {
   dvbcsa_bs_word_t	block[DVBCSA_KEYSBUFF_SIZE];
   dvbcsa_bs_word_t	stream[DVBCSA_CWBITS_SIZE];
-}
-#ifdef __GNUC__
-  __attribute__ ((aligned(sizeof(dvbcsa_bs_word_t))))
-#endif
-;
+};
 
 void dvbcsa_bs_stream_cipher_batch(const struct dvbcsa_bs_key_s *key,
 				   const struct dvbcsa_bs_batch_s *pcks,
