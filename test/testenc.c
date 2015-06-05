@@ -107,7 +107,7 @@ hexdump		(const char	*str,
 		 const void	*data,
 		 unsigned int	len)
 {
-  const uint8_t	*p = data;
+  const uint8_t	*p = (const uint8_t *)data;
   unsigned int	i;
 
   printf("- %s -\n", str);

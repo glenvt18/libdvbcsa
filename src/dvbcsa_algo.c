@@ -72,7 +72,7 @@ void dvbcsa_encrypt (const struct dvbcsa_key_s *key, uint8_t *data, unsigned int
 
 struct dvbcsa_key_s * dvbcsa_key_alloc(void)
 {
-  return malloc(sizeof (struct dvbcsa_key_s));
+  return (struct dvbcsa_key_s *)malloc(sizeof (struct dvbcsa_key_s));
 }
 
 void dvbcsa_key_free(struct dvbcsa_key_s *key)

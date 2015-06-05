@@ -94,7 +94,7 @@ struct dvbcsa_bs_key_s * dvbcsa_bs_key_alloc(void)
 # endif
 #endif
 
-  return p;
+  return (struct dvbcsa_bs_key_s *)p;
 }
 
 void dvbcsa_bs_key_free(struct dvbcsa_bs_key_s *key)

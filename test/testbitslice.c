@@ -32,7 +32,7 @@
 static void
 hexdump (const char *str, const void *data, uint32_t len)
 {
-  const uint8_t *p = data;
+  const uint8_t *p = (const uint8_t *)data;
   uint32_t i;
 
   printf ("- %s - %u bytes\n", str, len);
