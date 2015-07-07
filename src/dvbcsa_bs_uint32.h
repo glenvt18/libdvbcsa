@@ -43,8 +43,6 @@ typedef uint32_t dvbcsa_bs_word_t;
 
 #define BS_SHL(a, n)	((a) << (n))
 #define BS_SHR(a, n)	((a) >> (n))
-#define BS_SHL8(a, n)	((a) << (8 * (n)))
-#define BS_SHR8(a, n)	((a) >> (8 * (n)))
 #define BS_EXTRACT8(a, n) ((a) >> (8 * (n)))
 
 #define BS_EMPTY()

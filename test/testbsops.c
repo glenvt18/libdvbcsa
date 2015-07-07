@@ -239,86 +239,6 @@ main		(void)
   b = BS_SHR(a, 13);
   vec_testeq(BS_VAL16(0001), b);
 
-#if BS_BATCH_SIZE > 64
-
-  /* test SHL8 */
-
-  a = BS_VAL(0x0000002000000010LL, 0x0000000000030000LL);
-  b = BS_VAL(0x0000200000001000LL, 0x0000000003000000LL);
-  c = BS_SHL8(a, 1);
-  vec_testeq(b, c);
-
-  a = BS_VAL(0xaaaaaaaaaaaaaaaaLL, 0x5555555555555555LL);
-  /* there is no neon instruction to shift a whole register */
-#ifdef DVBCSA_USE_NEON
-  b = BS_VAL(0xaaaaaaaaaaaaaa00LL, 0x5555555555555500LL);
-#else
-  b = BS_VAL(0xaaaaaaaaaaaaaa55LL, 0x5555555555555500LL);
-#endif
-  c = BS_SHL8(a, 1);
-  vec_testeq(b, c);
-
-  a = BS_VAL(0xffffffffffffffffLL, 0xffffffffffffffffLL);
-#ifdef DVBCSA_USE_NEON
-  b = BS_VAL(0xffffffffffffff00LL, 0xffffffffffffff00LL);
-#else
-  b = BS_VAL(0xffffffffffffffffLL, 0xffffffffffffff00LL);
-#endif
-  c = BS_SHL8(a, 1);
-  vec_testeq(b, c);
-
-  a = BS_VAL(0xffffffffffffffffLL, 0xffffffffffffffffLL);
-#ifdef DVBCSA_USE_NEON
-  b = BS_VAL(0xffffffff00000000LL, 0xffffffff00000000LL);
-#else
-  b = BS_VAL(0xffffffffffffffffLL, 0xffffffff00000000LL);
-#endif
-  c = BS_SHL8(a, 4);
-  vec_testeq(b, c);
-
-  /* test SHR8 */
-
-  a = BS_VAL(0x0000200000001000LL, 0x0000000003000000LL);
-  b = BS_VAL(0x0000002000000010LL, 0x0000000000030000LL);
-  c = BS_SHR8(a, 1);
-  vec_testeq(b, c);
-
-  a = BS_VAL(0xaaaaaaaaaaaaaaaaLL, 0x5555555555555555LL);
-#ifdef DVBCSA_USE_NEON
-  b = BS_VAL(0x00aaaaaaaaaaaaaaLL, 0x0055555555555555LL);
-#else
-  b = BS_VAL(0x00aaaaaaaaaaaaaaLL, 0xaa55555555555555LL);
-#endif
-  c = BS_SHR8(a, 1);
-  vec_testeq(b, c);
-
-  a = BS_VAL(0xffffffffffffffffLL, 0xffffffffffffffffLL);
-#ifdef DVBCSA_USE_NEON
-  b = BS_VAL(0x00ffffffffffffffLL, 0x00ffffffffffffffLL);
-#else
-  b = BS_VAL(0x00ffffffffffffffLL, 0xffffffffffffffffLL);
-#endif
-  c = BS_SHR8(a, 1);
-  vec_testeq(b, c);
-
-  a = BS_VAL(0xffffffffffffffffLL, 0xffffffffffffffffLL);
-#ifdef DVBCSA_USE_NEON
-  b = BS_VAL(0x00000000ffffffffLL, 0x00000000ffffffffLL);
-#else
-  b = BS_VAL(0x00000000ffffffffLL, 0xffffffffffffffffLL);
-#endif
-  c = BS_SHR8(a, 4);
-  vec_testeq(b, c);
-
-  a = BS_VAL(0xffffffffffffffffLL, 0xffffffffffffffffLL);
-#ifdef DVBCSA_USE_NEON
-  b = BS_VAL(0x000000ffffffffffLL, 0x000000ffffffffffLL);
-#else
-  b = BS_VAL(0x000000ffffffffffLL, 0xffffffffffffffffLL);
-#endif
-  c = BS_SHR8(a, 3);
-  vec_testeq(b, c);
-
 #ifdef BS_LOAD_DEINTERLEAVE_8
 
   /* test BS_LOAD_DEINTERLEAVE_8 */
@@ -347,7 +267,6 @@ main		(void)
   vec_testeq(b, c);
   vec_testeq(BS_OR(b, BS_VAL8(10)), d);
   }
-#endif
 
 #endif
 

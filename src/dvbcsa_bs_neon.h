@@ -46,8 +46,6 @@ typedef uint64x2_t dvbcsa_bs_word_t;
 
 #define BS_SHL(a, n)    vshlq_n_u64 ((a), n)
 #define BS_SHR(a, n)    vshrq_n_u64 ((a), n)
-#define BS_SHL8(a, n)   BS_SHL(a, 8 * (n))
-#define BS_SHR8(a, n)   BS_SHR(a, 8 * (n))
 #define BS_EXTRACT8(a, n) (((uint8_t*)&(a))[n])
 
 #define BS_EMPTY()

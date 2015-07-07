@@ -46,8 +46,6 @@ typedef __m64 dvbcsa_bs_word_t;
 
 #define BS_SHL(a, n)	_m_psllqi((a), n)
 #define BS_SHR(a, n)	_m_psrlqi((a), n)
-#define BS_SHL8(a, n)	BS_SHL(a, 8 * (n))
-#define BS_SHR8(a, n)	BS_SHR(a, 8 * (n))
 #define BS_EXTRACT8(a, n) _mm_cvtsi64_si32(_m_psrlqi((a), 8 * (n)))
 
 #define BS_EMPTY()	_m_empty()

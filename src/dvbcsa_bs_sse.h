@@ -51,8 +51,6 @@ typedef __m128i dvbcsa_bs_word_t;
 
 #define BS_SHL(a, n)	_mm_slli_epi64(a, n)
 #define BS_SHR(a, n)	_mm_srli_epi64(a, n)
-#define BS_SHL8(a, n)	_mm_slli_si128(a, n)
-#define BS_SHR8(a, n)	_mm_srli_si128(a, n)
 
 #define BS_EXTRACT8(a, n) ((uint8_t*)&(a))[n]
 
