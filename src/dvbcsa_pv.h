@@ -95,6 +95,11 @@ void dvbcsa_key_schedule_block(const dvbcsa_cw_t cw, uint8_t * kk);
 #define DVBCSA_UNALIGNED_ACCESS_32 1
 #endif
 
+#if defined(__aarch64__)
+#define DVBCSA_UNALIGNED_ACCESS_32 1
+#define DVBCSA_UNALIGNED_ACCESS_64 1
+#endif
+
 DVBCSA_INLINE static inline void
 dvbcsa_xor_64 (uint8_t *b, const uint8_t *a)
 {

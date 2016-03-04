@@ -1,6 +1,8 @@
 AC_INIT(libdvbcsa, 1.1.0)
 AC_PREREQ(2.50)
 
+AC_CANONICAL_HOST
+
 AC_ARG_ENABLE(debug, AC_HELP_STRING(--enable-debug, [Enable debug]), enable_debug=$enableval, enable_debug=no)
 
 if test "$enable_debug" = "yes" ; then
@@ -58,7 +60,10 @@ elif test "$enable_altivec" = "yes" ; then
 
 elif test "$enable_neon" = "yes" ; then
      AC_DEFINE(DVBCSA_USE_NEON, 1, Using NEON bitslice.)
-     GCC_CFLAGS="$GCC_CFLAGS -mfpu=neon"
+     case $host_cpu in
+         arm64*|aarch64*) ;;
+         arm*) GCC_CFLAGS="$GCC_CFLAGS -mfpu=neon" ;;
+     esac
 
 elif test "$enable_uint32" = "yes" ; then
      transpose_32=yes
