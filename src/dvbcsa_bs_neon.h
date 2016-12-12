@@ -33,7 +33,7 @@ typedef uint64x2_t dvbcsa_bs_word_t;
 #define BS_BATCH_SIZE 128
 #define BS_BATCH_BYTES 16
 
-#define BS_VAL(n, m)    vcombine_u64((uint64_t)(m), (uint64_t)(n))
+#define BS_VAL(n, m)    vcombine_u64((uint64x1_t)(m), (uint64x1_t)(n))
 #define BS_VAL64(n)     vdupq_n_u64(0x##n##ULL)
 #define BS_VAL32(n)     vreinterpretq_u64_u32(vdupq_n_u32(0x##n))
 #define BS_VAL16(n)     vreinterpretq_u64_u16(vdupq_n_u16(0x##n))
