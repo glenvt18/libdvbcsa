@@ -82,12 +82,12 @@ typedef uint64x2_t dvbcsa_bs_word_t;
     }
 
 /* block cipher 2-word load with byte-deinterleaving */
-#define BS_LOAD_DEINTERLEAVE_8(ptr, var_lo, var_hi) \
-      {\
-      uint8x16x2_t tmp = vld2q_u8((uint8_t *)(ptr));\
-      var_lo = vreinterpretq_u64_u8(tmp.val[0]);\
-      var_hi = vreinterpretq_u64_u8(tmp.val[1]);\
-      }
+//#define BS_LOAD_DEINTERLEAVE_8(ptr, var_lo, var_hi) \
+//      {\
+//      uint8x16x2_t tmp = vld2q_u8((uint8_t *)(ptr));\
+//      var_lo = vreinterpretq_u64_u8(tmp.val[0]);\
+//      var_hi = vreinterpretq_u64_u8(tmp.val[1]);\
+//      }
 
 #endif
 
