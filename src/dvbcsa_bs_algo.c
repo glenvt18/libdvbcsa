@@ -38,6 +38,8 @@
 #include <assert.h>
 #endif
 
+#define DVBCSA_DISABLE_BLOCK
+
 void dvbcsa_bs_decrypt(const struct dvbcsa_bs_key_s *key,
 		       const struct dvbcsa_bs_batch_s *pcks,
 		       unsigned int maxlen)
