@@ -35,13 +35,13 @@
 int
 main (void)
 {
-  struct timeval		t0, t1;
-  struct dvbcsa_bs_key_s	*ffkey = dvbcsa_bs_key_alloc();
-  unsigned int			n, i, c = 0;
-  unsigned int			gs = dvbcsa_bs_batch_size();
-  uint8_t			data[gs + 1][184];
-  struct dvbcsa_bs_batch_s	pcks[gs + 1];
-  uint8_t			cw[8] = { 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, };
+  struct timeval                t0, t1;
+  struct dvbcsa_bs_key_s        *ffkey = dvbcsa_bs_key_alloc();
+  unsigned int                  n, i, c = 0;
+  unsigned int                  gs = dvbcsa_bs_batch_size();
+  uint8_t                       data[gs + 1][184];
+  struct dvbcsa_bs_batch_s      pcks[gs + 1];
+  uint8_t                       cw[8] = { 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, };
 
 #ifdef HAVE_ASSERT_H
   assert(ffkey != NULL);
@@ -82,7 +82,7 @@ main (void)
 #endif
 
       for (i = 0; i < n; i++)
-	dvbcsa_bs_decrypt(ffkey, pcks, 184);
+        dvbcsa_bs_decrypt(ffkey, pcks, 184);
 
       c += n * gs;
     }
@@ -90,8 +90,8 @@ main (void)
   gettimeofday(&t1, NULL);
 
   printf(" - %u packets proceded, %.1f Mbits/s\n\n", c,
-	 (float)(c * 184 * 8) / (float)((t1.tv_sec * 1000000 + t1.tv_usec) - (t0.tv_sec * 1000000 + t0.tv_usec))
-	 );
+         (float)(c * 184 * 8) / (float)((t1.tv_sec * 1000000 + t1.tv_usec) - (t0.tv_sec * 1000000 + t0.tv_usec))
+         );
 
   gettimeofday(&t0, NULL);
 
@@ -106,7 +106,7 @@ main (void)
 #endif
 
       for (i = 0; i < n; i++)
-	dvbcsa_bs_encrypt(ffkey, pcks, 184);
+        dvbcsa_bs_encrypt(ffkey, pcks, 184);
 
       c += n * gs;
     }
@@ -114,8 +114,8 @@ main (void)
   gettimeofday(&t1, NULL);
 
   printf(" - %u packets proceded, %.1f Mbits/s\n", c,
-	 (float)(c * 184 * 8) / (float)((t1.tv_sec * 1000000 + t1.tv_usec) - (t0.tv_sec * 1000000 + t0.tv_usec))
-	 );
+         (float)(c * 184 * 8) / (float)((t1.tv_sec * 1000000 + t1.tv_usec) - (t0.tv_sec * 1000000 + t0.tv_usec))
+         );
 
   dvbcsa_bs_key_free(ffkey);
 

@@ -32,14 +32,14 @@ extern "C" {
 #endif
 
 /* csa control word */
-typedef unsigned char		dvbcsa_cw_t[8];
+typedef unsigned char           dvbcsa_cw_t[8];
 
 /***********************************************************************
-	Single packet CSA implemetation API
+        Single packet CSA implemetation API
  */
 
 /* single packet implementation key context */
-typedef struct dvbcsa_key_s	dvbcsa_key_t;
+typedef struct dvbcsa_key_s     dvbcsa_key_t;
 
 /** allocate a new csa key context */
 struct dvbcsa_key_s * dvbcsa_key_alloc(void);
@@ -55,28 +55,28 @@ void dvbcsa_key_set (const dvbcsa_cw_t cw, struct dvbcsa_key_s *key);
 /** decrypt a packet payload */
 
 void dvbcsa_decrypt (const struct dvbcsa_key_s *key,
-		     unsigned char *data, unsigned int len);
+                     unsigned char *data, unsigned int len);
 
 /** encrypt a packet payload */
 
 void dvbcsa_encrypt (const struct dvbcsa_key_s *key,
-		     unsigned char *data, unsigned int len);
+                     unsigned char *data, unsigned int len);
 
 
 
 /***********************************************************************
-	Parallel bitslice CSA implemetation API
+        Parallel bitslice CSA implemetation API
  */
 
 /** packets batch structure, describe each data packet payload to process */
 struct dvbcsa_bs_batch_s
 {
-  unsigned char		*data;	/* pointer to payload */
-  unsigned int		len;	/* payload bytes lenght */
+  unsigned char         *data;  /* pointer to payload */
+  unsigned int          len;    /* payload bytes lenght */
 };
 
 /** parallel bitslice implementation key context */
-typedef struct dvbcsa_bs_key_s	dvbcsa_bs_key_t;
+typedef struct dvbcsa_bs_key_s  dvbcsa_bs_key_t;
 
 /** allocate a new csa bitslice key context */
 
@@ -100,8 +100,8 @@ unsigned int dvbcsa_bs_batch_size(void);
     a multiple of 8, should be 184 for TS packets. */
 
 void dvbcsa_bs_decrypt(const struct dvbcsa_bs_key_s *key,
-		       const struct dvbcsa_bs_batch_s *pcks,
-		       unsigned int maxlen);
+                       const struct dvbcsa_bs_batch_s *pcks,
+                       unsigned int maxlen);
 
 /** encrypt a packet batch. batch is an array of struct
     dvbcsa_bs_batch_s with an extra NULL data termination
@@ -109,8 +109,8 @@ void dvbcsa_bs_decrypt(const struct dvbcsa_bs_key_s *key,
     a multiple of 8, should be 184 for TS packets. */
 
 void dvbcsa_bs_encrypt(const struct dvbcsa_bs_key_s *key,
-		       const struct dvbcsa_bs_batch_s *pcks,
-		       unsigned int maxlen);
+                       const struct dvbcsa_bs_batch_s *pcks,
+                       unsigned int maxlen);
 
 #ifdef __cplusplus
 }

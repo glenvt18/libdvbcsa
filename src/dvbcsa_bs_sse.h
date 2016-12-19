@@ -38,19 +38,19 @@ typedef __m128i dvbcsa_bs_word_t;
 #define BS_BATCH_SIZE 128
 #define BS_BATCH_BYTES 16
 
-#define BS_VAL(n, m)	_mm_set_epi64x(n, m)
-#define BS_VAL64(n)	BS_VAL(0x##n##ULL, 0x##n##ULL)
-#define BS_VAL32(n)	BS_VAL64(n##n)
-#define BS_VAL16(n)	BS_VAL32(n##n)
-#define BS_VAL8(n)	BS_VAL16(n##n)
+#define BS_VAL(n, m)    _mm_set_epi64x(n, m)
+#define BS_VAL64(n)     BS_VAL(0x##n##ULL, 0x##n##ULL)
+#define BS_VAL32(n)     BS_VAL64(n##n)
+#define BS_VAL16(n)     BS_VAL32(n##n)
+#define BS_VAL8(n)      BS_VAL16(n##n)
 
-#define BS_AND(a, b)	_mm_and_si128((a), (b))
-#define BS_OR(a, b)	_mm_or_si128((a), (b))
-#define BS_XOR(a, b)	_mm_xor_si128((a), (b))
-#define BS_NOT(a)	_mm_andnot_si128((a), BS_VAL8(ff))
+#define BS_AND(a, b)    _mm_and_si128((a), (b))
+#define BS_OR(a, b)     _mm_or_si128((a), (b))
+#define BS_XOR(a, b)    _mm_xor_si128((a), (b))
+#define BS_NOT(a)       _mm_andnot_si128((a), BS_VAL8(ff))
 
-#define BS_SHL(a, n)	_mm_slli_epi64(a, n)
-#define BS_SHR(a, n)	_mm_srli_epi64(a, n)
+#define BS_SHL(a, n)    _mm_slli_epi64(a, n)
+#define BS_SHR(a, n)    _mm_srli_epi64(a, n)
 
 #define BS_EXTRACT8(a, n) ((uint8_t*)&(a))[n]
 

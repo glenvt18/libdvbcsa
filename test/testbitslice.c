@@ -27,7 +27,7 @@
 #include <assert.h>
 #endif
 
-#define TS_SIZE		184	/* stream size generation */
+#define TS_SIZE         184     /* stream size generation */
 
 static void
 hexdump (const char *str, const void *data, uint32_t len)
@@ -44,7 +44,7 @@ hexdump (const char *str, const void *data, uint32_t len)
 static int
 memtest (uint8_t *data, unsigned int val, unsigned int len)
 {
-  unsigned int	i;
+  unsigned int  i;
 
   for (i = 0; i < len; i++)
     if (data[i] != val)
@@ -60,10 +60,10 @@ main (void)
   struct dvbcsa_key_s *key = dvbcsa_key_alloc();
   unsigned int i;
   uint8_t cw[8] = {0x12, 0x34, 0x56, 0x78, 0x1e, 0xd4, 0xf6, 0xab};
-  unsigned int			gs = dvbcsa_bs_batch_size();
-  struct dvbcsa_bs_batch_s	pcks[gs + 1];
-  uint8_t	data[gs][184];
-  unsigned int	rnd[gs];
+  unsigned int                  gs = dvbcsa_bs_batch_size();
+  struct dvbcsa_bs_batch_s      pcks[gs + 1];
+  uint8_t       data[gs][184];
+  unsigned int  rnd[gs];
 
 #ifdef HAVE_ASSERT_H
   assert(ffkey != NULL);
@@ -114,11 +114,11 @@ main (void)
   for (i = 0; pcks[i].data; i++)
     {
       if (memtest(pcks[i].data, rnd[i], pcks[i].len))
-	{
-	  printf (" - #%u Failed !\n", i);
-	  hexdump("failed", pcks[i].data, pcks[i].len);
-	  return -1;
-	}
+        {
+          printf (" - #%u Failed !\n", i);
+          hexdump("failed", pcks[i].data, pcks[i].len);
+          return -1;
+        }
     }
 
   /* Bitslice encrypt test */
@@ -137,11 +137,11 @@ main (void)
   for (i = 0; pcks[i].data; i++)
     {
       if (memtest(pcks[i].data, rnd[i], pcks[i].len))
-	{
-	  puts (" - Failed !");
-	  hexdump("failed", pcks[i].data, pcks[i].len);
-	  return -1;
-	}
+        {
+          puts (" - Failed !");
+          hexdump("failed", pcks[i].data, pcks[i].len);
+          return -1;
+        }
     }
 
   dvbcsa_key_free(key);

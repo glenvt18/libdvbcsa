@@ -33,22 +33,22 @@ typedef __m64 dvbcsa_bs_word_t;
 #define BS_BATCH_SIZE 64
 #define BS_BATCH_BYTES 8
 
-#define BS_VAL(n)	((dvbcsa_bs_word_t)(n))
-#define BS_VAL64(n)	BS_VAL(0x##n##ULL)
-#define BS_VAL32(n)	BS_VAL64(n##n)
-#define BS_VAL16(n)	BS_VAL32(n##n)
-#define BS_VAL8(n)	BS_VAL16(n##n)
+#define BS_VAL(n)       ((dvbcsa_bs_word_t)(n))
+#define BS_VAL64(n)     BS_VAL(0x##n##ULL)
+#define BS_VAL32(n)     BS_VAL64(n##n)
+#define BS_VAL16(n)     BS_VAL32(n##n)
+#define BS_VAL8(n)      BS_VAL16(n##n)
 
-#define BS_AND(a, b)	_m_pand((a), (b))
-#define BS_OR(a, b)	_m_por((a), (b))
-#define BS_XOR(a, b)	_m_pxor ((a), (b))
-#define BS_NOT(a)	_m_pxor ((a), BS_VAL8(ff))
+#define BS_AND(a, b)    _m_pand((a), (b))
+#define BS_OR(a, b)     _m_por((a), (b))
+#define BS_XOR(a, b)    _m_pxor ((a), (b))
+#define BS_NOT(a)       _m_pxor ((a), BS_VAL8(ff))
 
-#define BS_SHL(a, n)	_m_psllqi((a), n)
-#define BS_SHR(a, n)	_m_psrlqi((a), n)
+#define BS_SHL(a, n)    _m_psllqi((a), n)
+#define BS_SHR(a, n)    _m_psrlqi((a), n)
 #define BS_EXTRACT8(a, n) _mm_cvtsi64_si32(_m_psrlqi((a), 8 * (n)))
 
-#define BS_EMPTY()	_m_empty()
+#define BS_EMPTY()      _m_empty()
 
 #endif
 

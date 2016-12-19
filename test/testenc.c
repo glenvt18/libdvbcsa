@@ -27,14 +27,14 @@
 #include <assert.h>
 #endif
 
-struct			test_s
+struct                  test_s
 {
-  const uint8_t		key[256];
-  const uint8_t		in[256];
-  const uint8_t		out[256];
+  const uint8_t         key[256];
+  const uint8_t         in[256];
+  const uint8_t         out[256];
 };
 
-static const struct test_s	csa_tests[2] =
+static const struct test_s      csa_tests[2] =
   {
     /* test 1 */
     {
@@ -100,15 +100,15 @@ static const struct test_s	csa_tests[2] =
     }
   };
 
-#define TS_SIZE		184	/* stream size generation */
+#define TS_SIZE         184     /* stream size generation */
 
 static void
-hexdump		(const char	*str,
-		 const void	*data,
-		 unsigned int	len)
+hexdump         (const char     *str,
+                 const void     *data,
+                 unsigned int   len)
 {
-  const uint8_t	*p = (const uint8_t *)data;
-  unsigned int	i;
+  const uint8_t *p = (const uint8_t *)data;
+  unsigned int  i;
 
   printf("- %s -\n", str);
   for (i = 0; i < len; i++)
@@ -117,11 +117,11 @@ hexdump		(const char	*str,
 }
 
 int
-main		(void)
+main            (void)
 {
-  struct dvbcsa_key_s	*key = dvbcsa_key_alloc();
-  unsigned int		i;
-  uint8_t		data[256];
+  struct dvbcsa_key_s   *key = dvbcsa_key_alloc();
+  unsigned int          i;
+  uint8_t               data[256];
 
 #ifdef HAVE_ASSERT_H
   assert(key != NULL);
@@ -139,14 +139,14 @@ main		(void)
       dvbcsa_encrypt(key, data, TS_SIZE);
 
       if (memcmp(data, csa_tests[i].in, TS_SIZE))
-	{
-	  puts("\nTest failed\n");
-	  hexdump("control words", csa_tests[i].key, sizeof(dvbcsa_cw_t));
-	  hexdump("input data", csa_tests[i].out, TS_SIZE);
-	  hexdump("expected stream", csa_tests[i].in, TS_SIZE);
-	  hexdump("output stream", data, TS_SIZE);
-	  return (1);
-	}
+        {
+          puts("\nTest failed\n");
+          hexdump("control words", csa_tests[i].key, sizeof(dvbcsa_cw_t));
+          hexdump("input data", csa_tests[i].out, TS_SIZE);
+          hexdump("expected stream", csa_tests[i].in, TS_SIZE);
+          hexdump("output stream", data, TS_SIZE);
+          return (1);
+        }
     }
 
   dvbcsa_key_free(key);

@@ -39,8 +39,8 @@
 #endif
 
 void dvbcsa_bs_decrypt(const struct dvbcsa_bs_key_s *key,
-		       const struct dvbcsa_bs_batch_s *pcks,
-		       unsigned int maxlen)
+                       const struct dvbcsa_bs_batch_s *pcks,
+                       unsigned int maxlen)
 {
 #ifdef HAVE_ASSERT_H
   assert(maxlen % 8 == 0);
@@ -53,12 +53,12 @@ void dvbcsa_bs_decrypt(const struct dvbcsa_bs_key_s *key,
   dvbcsa_bs_block_decrypt_batch(key, pcks, maxlen);
 #endif
 
-  BS_EMPTY ();			// restore CPU multimedia state
+  BS_EMPTY ();                  // restore CPU multimedia state
 }
 
 void dvbcsa_bs_encrypt(const struct dvbcsa_bs_key_s *key,
-		       const struct dvbcsa_bs_batch_s *pcks,
-		       unsigned int maxlen)
+                       const struct dvbcsa_bs_batch_s *pcks,
+                       unsigned int maxlen)
 {
 #ifdef HAVE_ASSERT_H
   assert(maxlen % 8 == 0);
@@ -71,7 +71,7 @@ void dvbcsa_bs_encrypt(const struct dvbcsa_bs_key_s *key,
   dvbcsa_bs_stream_cipher_batch(key, pcks, maxlen);
 #endif
 
-  BS_EMPTY ();			// restore CPU multimedia state
+  BS_EMPTY ();                  // restore CPU multimedia state
 }
 
 struct dvbcsa_bs_key_s * dvbcsa_bs_key_alloc(void)
@@ -83,8 +83,8 @@ struct dvbcsa_bs_key_s * dvbcsa_bs_key_alloc(void)
 
 #elif defined(HAVE_POSIX_MEMALIGN)
   p = posix_memalign(&p, sizeof(dvbcsa_bs_word_t) > sizeof(void *)
-			? sizeof(dvbcsa_bs_word_t) : sizeof(void *),
-			sizeof (struct dvbcsa_bs_key_s)) ? NULL : p;
+                        ? sizeof(dvbcsa_bs_word_t) : sizeof(void *),
+                        sizeof (struct dvbcsa_bs_key_s)) ? NULL : p;
 
 #else
   p = malloc(sizeof (struct dvbcsa_bs_key_s));
@@ -124,11 +124,11 @@ worddump (const char *str, const void *data, size_t len, size_t ws)
       const char *s;
 
       if ((i + 1) % 32 == 0)
-	s = "\n";
+        s = "\n";
       else if ((i + 1) % ws == 0)
-	s = " ";
+        s = " ";
       else
-	s = "";
+        s = "";
 
       printf("%02x%s", p[i ^ (ws - 1)], s);
     }

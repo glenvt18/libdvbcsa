@@ -26,63 +26,63 @@
 
 void _testeq(const int i, uint8_t a, uint8_t b, const char *sa, const char *sb, const char *file, const int line, const char *func)
 {
-	if ( a==b )
-		return;
-	printf("Test failed in %s:%d (%s), %s (%x) == %s (%x), i=%d\n", file, line, func, sa, a, sb, b, i);
-//	abort();
+        if ( a==b )
+                return;
+        printf("Test failed in %s:%d (%s), %s (%x) == %s (%x), i=%d\n", file, line, func, sa, a, sb, b, i);
+//      abort();
 }
 
 #define testeq(i, a, b) _testeq(i, a, b, #a, #b, __FILE__, __LINE__, __FUNCTION__)
 
-#define TEST_BS8(xx)								\
-	do {									\
-		dvbcsa_bs_word_t aaa = BS_VAL8(xx);				\
-		for (i = 0; i < BS_BATCH_BYTES; i++)				\
-			testeq(i, (uint8_t)BS_EXTRACT8(aaa, i), 0x##xx);	\
-	} while(0)
+#define TEST_BS8(xx)                                                            \
+        do {                                                                    \
+                dvbcsa_bs_word_t aaa = BS_VAL8(xx);                             \
+                for (i = 0; i < BS_BATCH_BYTES; i++)                            \
+                        testeq(i, (uint8_t)BS_EXTRACT8(aaa, i), 0x##xx);        \
+        } while(0)
 
-#define TEST_BS8_16(N)												   \
-	TEST_BS8(N##0);													   \
-	TEST_BS8(N##1);													   \
-	TEST_BS8(N##2);													   \
-	TEST_BS8(N##3);													   \
-	TEST_BS8(N##4);													   \
-	TEST_BS8(N##5);													   \
-	TEST_BS8(N##6);													   \
-	TEST_BS8(N##7);													   \
-	TEST_BS8(N##8);													   \
-	TEST_BS8(N##9);													   \
-	TEST_BS8(N##a);													   \
-	TEST_BS8(N##b);													   \
-	TEST_BS8(N##c);													   \
-	TEST_BS8(N##d);													   \
-	TEST_BS8(N##e);													   \
-	TEST_BS8(N##f)
+#define TEST_BS8_16(N)                                                                                             \
+        TEST_BS8(N##0);                                                                                                    \
+        TEST_BS8(N##1);                                                                                                    \
+        TEST_BS8(N##2);                                                                                                    \
+        TEST_BS8(N##3);                                                                                                    \
+        TEST_BS8(N##4);                                                                                                    \
+        TEST_BS8(N##5);                                                                                                    \
+        TEST_BS8(N##6);                                                                                                    \
+        TEST_BS8(N##7);                                                                                                    \
+        TEST_BS8(N##8);                                                                                                    \
+        TEST_BS8(N##9);                                                                                                    \
+        TEST_BS8(N##a);                                                                                                    \
+        TEST_BS8(N##b);                                                                                                    \
+        TEST_BS8(N##c);                                                                                                    \
+        TEST_BS8(N##d);                                                                                                    \
+        TEST_BS8(N##e);                                                                                                    \
+        TEST_BS8(N##f)
 
 void print_dvbcsa_word(dvbcsa_bs_word_t v)
 {
-	int i;
-	for (i = 0; i < BS_BATCH_BYTES; i++)
-		printf("%02x", (uint8_t)BS_EXTRACT8(v, BS_BATCH_BYTES-1-i));
+        int i;
+        for (i = 0; i < BS_BATCH_BYTES; i++)
+                printf("%02x", (uint8_t)BS_EXTRACT8(v, BS_BATCH_BYTES-1-i));
 }
 
 #define vec_testeq(a, b) _vec_testeq(a, b, __FILE__, __LINE__, __FUNCTION__)
 
 void _vec_testeq(dvbcsa_bs_word_t l, dvbcsa_bs_word_t r, const char *file, const int line, const char *func)
 {
-	int equal = 1, i;
-	for (i = 0; i < BS_BATCH_BYTES; i++)
-		equal &= (uint8_t)BS_EXTRACT8(l, i) == (uint8_t)BS_EXTRACT8(r, i);
-	if (equal)
-		return;
-	printf("Expected "); print_dvbcsa_word(l); printf("\n");
-	printf("Got      "); print_dvbcsa_word(r); printf("\n");
-	printf("Error in %s: %s:%d. Inequality\n", func, file, line);
-	abort();
+        int equal = 1, i;
+        for (i = 0; i < BS_BATCH_BYTES; i++)
+                equal &= (uint8_t)BS_EXTRACT8(l, i) == (uint8_t)BS_EXTRACT8(r, i);
+        if (equal)
+                return;
+        printf("Expected "); print_dvbcsa_word(l); printf("\n");
+        printf("Got      "); print_dvbcsa_word(r); printf("\n");
+        printf("Error in %s: %s:%d. Inequality\n", func, file, line);
+        abort();
 }
 
 int
-main		(void)
+main            (void)
 {
   unsigned int i;
 
@@ -159,7 +159,7 @@ main		(void)
 #if BS_BATCH_SIZE > 64
 
   a = BS_VAL(0xabcdef1331fedcbaLL,
-	     0x1234567887654321LL);
+             0x1234567887654321LL);
 
   for (i = 0; i < BS_BATCH_BYTES; i += 16)
     {

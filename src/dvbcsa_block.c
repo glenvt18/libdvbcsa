@@ -29,12 +29,12 @@ void dvbcsa_key_set (const dvbcsa_cw_t cw, struct dvbcsa_key_s *key)
   uint64_t a = dvbcsa_load_le64(cw);
   dvbcsa_store_le64(key->cw,  a);
   dvbcsa_store_le64(key->cws, ((a & 0xf0f0f0f0f0f0f0f0ULL) >> 4) |
-		              ((a & 0x0f0f0f0f0f0f0f0fULL) << 4));
+                              ((a & 0x0f0f0f0f0f0f0f0fULL) << 4));
 
   dvbcsa_key_schedule_block(cw, key->sch);
 }
 
-static const uint8_t		csa_block_perm[256] =
+static const uint8_t            csa_block_perm[256] =
   {
     0x00, 0x02, 0x80, 0x82, 0x20, 0x22, 0xa0, 0xa2, 0x10, 0x12, 0x90, 0x92, 0x30, 0x32, 0xb0, 0xb2,
     0x04, 0x06, 0x84, 0x86, 0x24, 0x26, 0xa4, 0xa6, 0x14, 0x16, 0x94, 0x96, 0x34, 0x36, 0xb4, 0xb6,
@@ -54,7 +54,7 @@ static const uint8_t		csa_block_perm[256] =
     0x4d, 0x4f, 0xcd, 0xcf, 0x6d, 0x6f, 0xed, 0xef, 0x5d, 0x5f, 0xdd, 0xdf, 0x7d, 0x7f, 0xfd, 0xff,
 };
 
-const uint8_t		dvbcsa_block_sbox[256] =
+const uint8_t           dvbcsa_block_sbox[256] =
   {
     0x3a, 0xea, 0x68, 0xfe, 0x33, 0xe9, 0x88, 0x1a, 0x83, 0xcf, 0xe1, 0x7f, 0xba, 0xe2, 0x38, 0x12,
     0xe8, 0x27, 0x61, 0x95, 0x0c, 0x36, 0xe5, 0x70, 0xa2, 0x06, 0x82, 0x7c, 0x17, 0xa3, 0x26, 0x49,
@@ -76,15 +76,15 @@ const uint8_t		dvbcsa_block_sbox[256] =
 
 void dvbcsa_block_decrypt (const dvbcsa_keys_t key, const dvbcsa_block_t in, dvbcsa_block_t out)
 {
-  unsigned int	i = DVBCSA_KEYSBUFF_SIZE;
-  dvbcsa_block_t	W;
+  unsigned int  i = DVBCSA_KEYSBUFF_SIZE;
+  dvbcsa_block_t        W;
 
   memcpy(W, in, sizeof(W));
 
   while (i--)
     {
-      register uint8_t	L;
-      uint8_t		S;
+      register uint8_t  L;
+      uint8_t           S;
 
       S = dvbcsa_block_sbox[key[i] ^ W[6]];
 
@@ -106,15 +106,15 @@ void dvbcsa_block_decrypt (const dvbcsa_keys_t key, const dvbcsa_block_t in, dvb
 
 void dvbcsa_block_encrypt (const dvbcsa_keys_t key, const dvbcsa_block_t in, dvbcsa_block_t out)
 {
-  unsigned int	i = 0;
-  dvbcsa_block_t	W;
+  unsigned int  i = 0;
+  dvbcsa_block_t        W;
 
   memcpy(W, in, sizeof(W));
 
   while (i < DVBCSA_KEYSBUFF_SIZE)
     {
-      register uint8_t	L;
-      uint8_t		S;
+      register uint8_t  L;
+      uint8_t           S;
 
       S = dvbcsa_block_sbox[key[i] ^ W[7]];
 

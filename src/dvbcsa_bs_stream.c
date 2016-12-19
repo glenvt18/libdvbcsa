@@ -34,8 +34,8 @@
 
 void
 dvbcsa_bs_stream_cipher_batch(const struct dvbcsa_bs_key_s *key,
-			      const struct dvbcsa_bs_batch_s *pcks,
-			      unsigned int maxlen)
+                              const struct dvbcsa_bs_batch_s *pcks,
+                              unsigned int maxlen)
 {
   struct dvbcsa_bs_stream_regs_s regs;
 
@@ -47,10 +47,10 @@ dvbcsa_bs_stream_cipher_batch(const struct dvbcsa_bs_key_s *key,
   for (b = 0; b < 4; b++)
     {
       for (i = 0; i < 8; i++)
-	{
-	  regs.A[32 + i][b] = key->stream[b + i * 4];
-	  regs.B[32 + i][b] = key->stream[b + i * 4 + 32];
-	}
+        {
+          regs.A[32 + i][b] = key->stream[b + i * 4];
+          regs.B[32 + i][b] = key->stream[b + i * 4 + 32];
+        }
 
       // all other regs = 0
       regs.A[32 + 8][b] = BS_VAL8(00);

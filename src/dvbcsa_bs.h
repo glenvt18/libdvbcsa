@@ -55,33 +55,33 @@
 
 struct dvbcsa_bs_key_s
 {
-  dvbcsa_bs_word_t	block[DVBCSA_KEYSBUFF_SIZE];
-  dvbcsa_bs_word_t	stream[DVBCSA_CWBITS_SIZE];
+  dvbcsa_bs_word_t      block[DVBCSA_KEYSBUFF_SIZE];
+  dvbcsa_bs_word_t      stream[DVBCSA_CWBITS_SIZE];
 };
 
 void dvbcsa_bs_stream_cipher_batch(const struct dvbcsa_bs_key_s *key,
-				   const struct dvbcsa_bs_batch_s *pcks,
-				   unsigned int maxlen);
+                                   const struct dvbcsa_bs_batch_s *pcks,
+                                   unsigned int maxlen);
 
 void dvbcsa_bs_block_decrypt_batch(const struct dvbcsa_bs_key_s *key,
-				   const struct dvbcsa_bs_batch_s *pcks,
-				   unsigned int maxlen);
+                                   const struct dvbcsa_bs_batch_s *pcks,
+                                   unsigned int maxlen);
 
 void dvbcsa_bs_block_encrypt_batch(const struct dvbcsa_bs_key_s *key,
-				   const struct dvbcsa_bs_batch_s *pcks,
-				   unsigned int maxlen);
+                                   const struct dvbcsa_bs_batch_s *pcks,
+                                   unsigned int maxlen);
 
 void dvbcsa_bs_block_transpose_in(dvbcsa_bs_word_t *out, const struct dvbcsa_bs_batch_s *pcks,
-				  unsigned int offset);
+                                  unsigned int offset);
 
 void dvbcsa_bs_block_transpose_out(dvbcsa_bs_word_t *in, const struct dvbcsa_bs_batch_s *pcks,
-				   unsigned int offset);
+                                   unsigned int offset);
 
 void dvbcsa_bs_stream_transpose_out(const struct dvbcsa_bs_batch_s *pcks,
-				      unsigned int index, dvbcsa_bs_word_t *row);
+                                    unsigned int index, dvbcsa_bs_word_t *row);
 
 void dvbcsa_bs_stream_transpose_in(const struct dvbcsa_bs_batch_s *pcks,
-				     dvbcsa_bs_word_t *row);
+                                   dvbcsa_bs_word_t *row);
 
 
 #endif

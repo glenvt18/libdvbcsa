@@ -56,7 +56,7 @@ dvbcsa_bs_key_set (const dvbcsa_cw_t cw, struct dvbcsa_bs_key_s *key)
       int j;
 
       for (j = 0; j < BS_BATCH_BYTES / 8; j++)
-	*((uint64_t*)(key->block + i) + j) = v;
+        *((uint64_t*)(key->block + i) + j) = v;
 #else
 # error
 #endif

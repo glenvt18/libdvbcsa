@@ -59,18 +59,18 @@
 
 void worddump (const char *str, const void *data, size_t len, size_t ws);
 
-#define DVBCSA_DATA_SIZE	8
-#define DVBCSA_KEYSBUFF_SIZE	56
-#define DVBCSA_CWBITS_SIZE	64
+#define DVBCSA_DATA_SIZE        8
+#define DVBCSA_KEYSBUFF_SIZE    56
+#define DVBCSA_CWBITS_SIZE      64
 
-typedef uint8_t			dvbcsa_block_t[DVBCSA_DATA_SIZE];
-typedef uint8_t			dvbcsa_keys_t[DVBCSA_KEYSBUFF_SIZE];
+typedef uint8_t                 dvbcsa_block_t[DVBCSA_DATA_SIZE];
+typedef uint8_t                 dvbcsa_keys_t[DVBCSA_KEYSBUFF_SIZE];
 
 struct dvbcsa_key_s
 {
-  dvbcsa_cw_t		cw;
-  dvbcsa_cw_t		cws;	/* nibble swapped CW */
-  dvbcsa_keys_t		sch;
+  dvbcsa_cw_t           cw;
+  dvbcsa_cw_t           cws;    /* nibble swapped CW */
+  dvbcsa_keys_t         sch;
 };
 
 extern const uint8_t dvbcsa_block_sbox[256];
@@ -79,7 +79,7 @@ void dvbcsa_block_decrypt (const dvbcsa_keys_t key, const dvbcsa_block_t in, dvb
 void dvbcsa_block_encrypt (const dvbcsa_keys_t key, const dvbcsa_block_t in, dvbcsa_block_t out);
 
 void dvbcsa_stream_xor (const dvbcsa_cw_t cw, const dvbcsa_block_t iv,
-			uint8_t *stream, unsigned int len);
+                        uint8_t *stream, unsigned int len);
 
 void dvbcsa_key_schedule_block(const dvbcsa_cw_t cw, uint8_t * kk);
 
@@ -139,14 +139,14 @@ dvbcsa_load_le64(const uint8_t *p)
   return i;
 #else
   return (uint64_t)( ((uint64_t)p[7] << 56) |
-		     ((uint64_t)p[6] << 48) |
-		     ((uint64_t)p[5] << 40) |
-		     ((uint64_t)p[4] << 32) |
-		     ((uint64_t)p[3] << 24) |
-		     ((uint64_t)p[2] << 16) |
-		     ((uint64_t)p[1] << 8 ) |
-		      (uint64_t)p[0]
-		     );
+                     ((uint64_t)p[6] << 48) |
+                     ((uint64_t)p[5] << 40) |
+                     ((uint64_t)p[4] << 32) |
+                     ((uint64_t)p[3] << 24) |
+                     ((uint64_t)p[2] << 16) |
+                     ((uint64_t)p[1] << 8 ) |
+                      (uint64_t)p[0]
+                     );
 #endif
 }
 

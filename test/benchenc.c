@@ -33,16 +33,16 @@
 #include <assert.h>
 #endif
 
-#define TS_SIZE		184
+#define TS_SIZE         184
 
 int
-main		(void)
+main            (void)
 {
-  struct timeval	t0, t1;
-  struct dvbcsa_key_s	*key = dvbcsa_key_alloc();
-  unsigned int		n, i, c = 0;
-  uint8_t		data[256];
-  dvbcsa_cw_t		cw = { 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, };
+  struct timeval        t0, t1;
+  struct dvbcsa_key_s   *key = dvbcsa_key_alloc();
+  unsigned int          n, i, c = 0;
+  uint8_t               data[256];
+  dvbcsa_cw_t           cw = { 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, };
 
 #ifdef HAVE_ASSERT_H
   assert(key != NULL);
@@ -74,16 +74,16 @@ main		(void)
 #endif
 
       for (i = 0; i < n; i++)
-	dvbcsa_encrypt(key, data, TS_SIZE);
+        dvbcsa_encrypt(key, data, TS_SIZE);
 
-	c += n;
+        c += n;
     }
 
   gettimeofday(&t1, NULL);
 
   printf(" - %u packets proceded, %.1f Mbits/s\n\n", c,
-	 (float)(c * 184 * 8) / (float)((t1.tv_sec * 1000000 + t1.tv_usec) - (t0.tv_sec * 1000000 + t0.tv_usec))
-	 );
+         (float)(c * 184 * 8) / (float)((t1.tv_sec * 1000000 + t1.tv_usec) - (t0.tv_sec * 1000000 + t0.tv_usec))
+         );
 
   dvbcsa_key_free(key);
 
