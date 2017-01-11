@@ -83,6 +83,12 @@ void dvbcsa_stream_xor (const dvbcsa_cw_t cw, const dvbcsa_block_t iv,
 
 void dvbcsa_key_schedule_block(const dvbcsa_cw_t cw, uint8_t * kk);
 
+/* _FORTIFY_SOURCE might prevent gcc from generating inlined memcpy() */
+#if defined(__GNUC__) && defined(_FORTIFY_SOURCE)
+#undef memcpy
+#define memcpy __builtin_memcpy
+#endif
+
 DVBCSA_INLINE static inline void
 dvbcsa_xor_64 (uint8_t *b, const uint8_t *a)
 {
