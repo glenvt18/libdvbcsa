@@ -53,50 +53,107 @@ memtest (uint8_t *data, unsigned int val, unsigned int len)
   return 0;
 }
 
-int
-main (void)
+static unsigned int  gs;
+static uint8_t       **data;
+static unsigned int  *rnd;
+static struct        dvbcsa_bs_batch_s *pcks;
+static uint8_t       cw[8] = {0x12, 0x34, 0x56, 0x78, 0x1e, 0xd4, 0xf6, 0xab};
+static int           n_tests, n_failed;
+
+static void init_data(void)
 {
+  unsigned int i;
+
+  //  srand(time(0));
+
+  n_tests = 0;
+  n_failed = 0;
+
+  gs = dvbcsa_bs_batch_size();
+  rnd = (unsigned int *)malloc(gs * sizeof(unsigned int));
+  pcks = (struct dvbcsa_bs_batch_s *)malloc((gs + 1) * sizeof(struct dvbcsa_bs_batch_s));
+  data = (uint8_t **)malloc(gs * sizeof(uint8_t *));
+#ifdef HAVE_ASSERT_H
+  assert(rnd != NULL);
+  assert(pcks != NULL);
+  assert(data != NULL);
+#endif
+  for (i = 0; i < gs; i++)
+    {
+      data[i] = (uint8_t *)malloc(TS_SIZE);
+#ifdef HAVE_ASSERT_H
+      assert(data[i] != NULL);
+#endif
+    }
+}
+
+static void free_data(void)
+{
+  unsigned int i;
+
+  for (i = 0; i < gs; i++)
+    free(data[i]);
+  free(data);
+  free(pcks);
+  free(rnd);
+}
+
+static void
+generate_packets(unsigned int minlen, unsigned int maxlen,
+                 int random_size, int pattern)
+{
+  unsigned int i, curlen = minlen;
+
+  printf(" - Generating batch with %i packets, size range: %d-%d%s, pattern: 0x%02x%s\n",
+      gs, minlen, maxlen, (random_size)? " (random)" : "", pattern & 0xff,
+      (pattern < 0)? " (random)" : "");
+
+  for (i = 0; i < gs; i++)
+    {
+      if (pattern < 0)
+        rnd[i] = rand() & 0xff;
+      else
+        rnd[i] = pattern & 0xff;
+
+      if (random_size)
+        {
+          int offs, len;
+
+          len = minlen + rand() % (maxlen - minlen + 1);
+          offs = rand() % (TS_SIZE - len + 1);
+          pcks[i].data = data[i] + offs;
+          pcks[i].len = len;
+        }
+      else
+        {
+          if (curlen > maxlen)
+            curlen = minlen;
+          pcks[i].data = data[i] + (TS_SIZE - curlen);
+          pcks[i].len = curlen;
+          curlen++;
+        }
+      memset(pcks[i].data, rnd[i], pcks[i].len);
+    }
+
+  pcks[i].data = NULL;
+}
+
+static int
+run_test(void)
+{
+  unsigned int i;
+  int ret = 0;
+
   struct dvbcsa_bs_key_s *ffkey = dvbcsa_bs_key_alloc();
   struct dvbcsa_key_s *key = dvbcsa_key_alloc();
-  unsigned int i;
-  uint8_t cw[8] = {0x12, 0x34, 0x56, 0x78, 0x1e, 0xd4, 0xf6, 0xab};
-  unsigned int                  gs = dvbcsa_bs_batch_size();
-  struct dvbcsa_bs_batch_s      pcks[gs + 1];
-  uint8_t       data[gs][184];
-  unsigned int  rnd[gs];
 
 #ifdef HAVE_ASSERT_H
   assert(ffkey != NULL);
   assert(key != NULL);
 #endif
 
-  //  srand(time(0));
-
-  printf("* DVBCSA test *\n");
-
   dvbcsa_key_set (cw, key);
   dvbcsa_bs_key_set (cw, ffkey);
-
-  printf(" - Generating batch with %i randomly sized packets\n", gs);
-
-  for (i = 0; i < gs; i++)
-    {
-#if 0
-      rnd[i] = 0xa5;
-
-      pcks[i].data = data[i];
-      pcks[i].len = 184;
-#else
-      rnd[i] = rand() & 0xff;
-
-      pcks[i].data = data[i] + rand() % 10;
-      pcks[i].len = 100 + rand() % 75;
-
-#endif
-      memset(pcks[i].data, rnd[i], pcks[i].len);
-    }
-
-  pcks[i].data = NULL;
 
   /* Bitslice decrypt test */
 
@@ -117,7 +174,8 @@ main (void)
         {
           printf (" - #%u Failed !\n", i);
           hexdump("failed", pcks[i].data, pcks[i].len);
-          return -1;
+          ret = -1;
+          goto cleanup;
         }
     }
 
@@ -140,15 +198,58 @@ main (void)
         {
           puts (" - Failed !");
           hexdump("failed", pcks[i].data, pcks[i].len);
-          return -1;
+          ret = -1;
+          goto cleanup;
         }
     }
 
+  puts (" - Ok !");
+
+cleanup:
   dvbcsa_key_free(key);
   dvbcsa_bs_key_free(ffkey);
 
-  puts (" - Ok !");
+  if (ret != 0)
+    n_failed++;
 
-  return (0);
+  n_tests++;
+
+  return ret;
+}
+
+int
+main (void)
+{
+  unsigned int minl;
+
+  printf("* DVBCSA test *\n");
+
+  init_data();
+
+  generate_packets(TS_SIZE, TS_SIZE, 0, 0xa5);
+  run_test();
+
+  generate_packets(100, TS_SIZE, 1, -1);
+  run_test();
+
+  for (minl = 0; minl < TS_SIZE; minl += gs)
+    {
+      unsigned int maxl = minl + gs - 1;
+      if (maxl > TS_SIZE)
+        maxl = TS_SIZE;
+
+      generate_packets(minl, maxl, 0, -1);
+      run_test();
+    }
+
+  free_data();
+
+  printf("=======================\n");
+  if (n_failed)
+    printf("%d out of %d tests FAILED.\n", n_failed, n_tests);
+  else
+    printf("OK! All tests passed.\n");
+
+  return (n_failed != 0);
 }
 
