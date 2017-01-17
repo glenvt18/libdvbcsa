@@ -93,28 +93,6 @@ dvbcsa_xor_64 (uint8_t *b, const uint8_t *a)
   memcpy(b, &ib, 8);
 }
 
-DVBCSA_INLINE static inline void
-dvbcsa_xor_32 (uint8_t *b, const uint8_t *a)
-{
-  uint32_t ia, ib;
-  memcpy(&ia, a, 4);
-  memcpy(&ib, b, 4);
-  ib ^= ia;
-  memcpy(b, &ib, 4);
-}
-
-DVBCSA_INLINE static inline void
-dvbcsa_copy_64 (uint8_t *b, const uint8_t *a)
-{
-  memcpy(b, a, 8);
-}
-
-DVBCSA_INLINE static inline void
-dvbcsa_copy_32 (uint8_t *b, const uint8_t *a)
-{
-  memcpy(b, a, 4);
-}
-
 DVBCSA_INLINE static inline uint32_t
 dvbcsa_load_le32(const uint8_t *p)
 {
@@ -147,19 +125,6 @@ dvbcsa_load_le64(const uint8_t *p)
                      ((uint64_t)p[1] << 8 ) |
                       (uint64_t)p[0]
                      );
-#endif
-}
-
-DVBCSA_INLINE static inline void
-dvbcsa_store_le32(uint8_t *p, const uint32_t w)
-{
-#if defined(DVBCSA_ENDIAN_LITTLE)
-  memcpy(p, &w, 4);
-#else
-  p[3] = (w >> 24);
-  p[2] = (w >> 16);
-  p[1] = (w >> 8);
-  p[0] = (w);
 #endif
 }
 

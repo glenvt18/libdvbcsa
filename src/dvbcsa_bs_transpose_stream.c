@@ -188,44 +188,35 @@ static void dvbcsa_bs_matrix_transpose_64x(dvbcsa_bs_word_t *row)
 #endif
 }
 
-
-/* 64 rows of 64 bits transposition (bytes transp. - 8x8 rotate counterclockwise)*/
-
-void dvbcsa_bs_stream_transpose_in(const struct dvbcsa_bs_batch_s *pcks, dvbcsa_bs_word_t *row)
+void dvbcsa_bs_stream_transpose_in(const struct dvbcsa_bs_pkt_buf *pkt_buf,
+                                   dvbcsa_bs_word_t *row)
 {
-  uint64_t *p;
+  uint64_t *p = (uint64_t *)row;
+  const dvbcsa_bs_block8_t *block = pkt_buf->data;
+  int i;
 
-  for (p = (uint64_t *)row; pcks->data; p++, pcks++)
+  for (i = 0; i < pkt_buf->n_packets; i++)
     {
-      if (pcks->len >= 8)
-        dvbcsa_copy_64((uint8_t *)p, pcks->data);
+      *p++ = block->u64;
+      block += BS_PKT_BLOCKS8;
     }
 
   dvbcsa_bs_matrix_transpose_64x(row);
 }
 
-/* 8 rows of 64 bits transposition (bytes transp. - 8x8 rotate clockwise)*/
-
-void dvbcsa_bs_stream_transpose_out(const struct dvbcsa_bs_batch_s *pcks,
-                unsigned int index, dvbcsa_bs_word_t *row)
+void dvbcsa_bs_stream_transpose_out(struct dvbcsa_bs_pkt_buf *pkt_buf,
+                                   unsigned int index, dvbcsa_bs_word_t *row)
 {
-  int i, j;
-  uint8_t *p;
+  uint64_t *p = (uint64_t *)row;
+  dvbcsa_bs_block8_t *block = pkt_buf->data + index / 8;
+  int i;
 
   dvbcsa_bs_matrix_transpose_64x(row);
 
-  for (p = (uint8_t *)row; pcks->data; pcks++)
+  for (i = 0; i < pkt_buf->n_packets; i++)
     {
-      if (index + 8 <= pcks->len)
-        {
-          dvbcsa_xor_64(pcks->data + index, p);
-        }
-      else
-        {
-          for (j = 0, i = index; i < pcks->len; i++, j++)
-            pcks->data[i] ^= p[j];
-        }
-      p += 8;
+      block->u64 ^= *p++;
+      block += BS_PKT_BLOCKS8;
     }
 }
 

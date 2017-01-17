@@ -61,37 +61,66 @@ dvbcsa_bs_matrix_transpose_block(dvbcsa_bs_word_t *row)
     }
 }
 
-void dvbcsa_bs_block_transpose_in (dvbcsa_bs_word_t *out,
-                const struct dvbcsa_bs_batch_s *pcks,
+void dvbcsa_bs_block_transpose_in(dvbcsa_bs_word_t *out,
+                const struct dvbcsa_bs_pkt_buf *pkt_buf,
                 unsigned int offset)
 {
   uint32_t *ri = (uint32_t *)out;
-  unsigned int i;
+  const dvbcsa_bs_block8_t *block = pkt_buf->data + offset / 8;
+  int i;
 
-  for (i = 0; pcks[i].data; i++)
-    if (offset < (pcks[i].len & (unsigned)~0x7))
-      {
-        dvbcsa_copy_32((uint8_t *)(ri + i), pcks[i].data + offset);
-        dvbcsa_copy_32((uint8_t *)(ri + i + BS_BATCH_SIZE), pcks[i].data + offset + 4);
-      }
+  for (i = 0; i < pkt_buf->n_packets; i++, block += BS_PKT_BLOCKS8)
+    {
+      ri[i] = block->u32[0];
+      ri[i + BS_BATCH_SIZE] = block->u32[1];
+    }
 
   dvbcsa_bs_matrix_transpose_block(out);
 }
 
-void dvbcsa_bs_block_transpose_out (dvbcsa_bs_word_t *in,
-                const struct dvbcsa_bs_batch_s *pcks,
-                unsigned int offset)
+/* output transpose and chained cipher XOR 2-in-1 */
+
+void dvbcsa_bs_block_transpose_out_and_xor(dvbcsa_bs_word_t *in,
+                struct dvbcsa_bs_pkt_buf *pkt_buf,
+                unsigned int offset, int encrypt)
 {
-  uint32_t *ri = (uint32_t *) in;
-  unsigned int i;
+  uint32_t *ri = (uint32_t *)in;
+  dvbcsa_bs_block8_t *block = pkt_buf->data + offset / 8;
+  int i;
 
   dvbcsa_bs_matrix_transpose_block(in);
 
-  for (i = 0; pcks[i].data; i++)
-    if (offset < (pcks[i].len & (unsigned)~0x7))
-      {
-        dvbcsa_copy_32(pcks[i].data + offset, (uint8_t *)(ri + i));
-        dvbcsa_copy_32(pcks[i].data + offset + 4, (uint8_t *)(ri + i + BS_BATCH_SIZE));
-      }
+  if (offset == 0)
+    {
+      for (i = 0; i < pkt_buf->n_packets; i++, block += BS_PKT_BLOCKS8)
+        if (pkt_buf->len8[i])
+          {
+            block->u32[0] = ri[i];
+            block->u32[1] = ri[i + BS_BATCH_SIZE];
+          }
+    }
+  else if (encrypt)
+    {
+      for (i = 0; i < pkt_buf->n_packets; i++, block += BS_PKT_BLOCKS8)
+        if (offset < pkt_buf->len8[i])
+          {
+            dvbcsa_bs_block8_t b;
+            b.u32[0] = ri[i];
+            b.u32[1] = ri[i + BS_BATCH_SIZE];
+            block[-1].u64 ^= b.u64;
+            block[0].u64 = b.u64;
+          }
+    }
+  else
+    {
+      for (i = 0; i < pkt_buf->n_packets; i++, block += BS_PKT_BLOCKS8)
+        if (offset < pkt_buf->len8[i])
+          {
+            dvbcsa_bs_block8_t b;
+            b.u32[0] = ri[i];
+            b.u32[1] = ri[i + BS_BATCH_SIZE];
+            block[-1].u64 ^= block[0].u64;
+            block[0].u64 = b.u64;
+          }
+    }
 }
-

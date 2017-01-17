@@ -34,7 +34,7 @@
 
 void
 dvbcsa_bs_stream_cipher_batch(const struct dvbcsa_bs_key_s *key,
-                              const struct dvbcsa_bs_batch_s *pcks,
+                              struct dvbcsa_bs_pkt_buf *pkt_buf,
                               unsigned int maxlen)
 {
   struct dvbcsa_bs_stream_regs_s regs;
@@ -42,7 +42,7 @@ dvbcsa_bs_stream_cipher_batch(const struct dvbcsa_bs_key_s *key,
   int i, b;
   unsigned int h;
 
-  dvbcsa_bs_stream_transpose_in(pcks, regs.sb);
+  dvbcsa_bs_stream_transpose_in(pkt_buf, regs.sb);
 
   for (b = 0; b < 4; b++)
     {
@@ -80,7 +80,7 @@ dvbcsa_bs_stream_cipher_batch(const struct dvbcsa_bs_key_s *key,
   for (h = 8; h < maxlen; h += 8)
     {
       dvbcsa_bs_stream_cipher_kernel(&regs);
-      dvbcsa_bs_stream_transpose_out(pcks, h, regs.sb);
+      dvbcsa_bs_stream_transpose_out(pkt_buf, h, regs.sb);
     }
 
 }

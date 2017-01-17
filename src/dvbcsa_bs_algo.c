@@ -38,40 +38,81 @@
 #include <assert.h>
 #endif
 
+static void dvbcsa_pkt_buf_load(struct dvbcsa_bs_pkt_buf *pkt_buf,
+                                const struct dvbcsa_bs_batch_s *pcks,
+                                unsigned int maxlen)
+{
+  int i;
+  dvbcsa_bs_block8_t *block = pkt_buf->data;
+
+  for (i = 0; pcks[i].data; i++, block += BS_PKT_BLOCKS8)
+    {
+      pkt_buf->len8[i] = pcks[i].len & (unsigned)~0x7;
+      memcpy(block, pcks[i].data, pcks[i].len);
+    }
+
+  pkt_buf->n_packets = i;
+  pkt_buf->maxlen = maxlen;
+}
+
+static void dvbcsa_pkt_buf_store(const struct dvbcsa_bs_pkt_buf *pkt_buf,
+                                const struct dvbcsa_bs_batch_s *pcks)
+{
+  int i;
+  const dvbcsa_bs_block8_t *block = pkt_buf->data;
+
+  for (i = 0; pcks[i].data; i++, block += BS_PKT_BLOCKS8)
+    memcpy(pcks[i].data, block, pcks[i].len);
+}
+
 void dvbcsa_bs_decrypt(const struct dvbcsa_bs_key_s *key,
                        const struct dvbcsa_bs_batch_s *pcks,
                        unsigned int maxlen)
 {
+  struct dvbcsa_bs_pkt_buf pbuf;
+
 #ifdef HAVE_ASSERT_H
   assert(maxlen % 8 == 0);
+  assert(maxlen <= DVBCSA_BS_MAX_PACKET_LEN);
 #endif
 
+  dvbcsa_pkt_buf_load(&pbuf, pcks, maxlen);
+
 #ifndef DVBCSA_DISABLE_STREAM
-  dvbcsa_bs_stream_cipher_batch(key, pcks, maxlen);
+  dvbcsa_bs_stream_cipher_batch(key, &pbuf, maxlen);
 #endif
 #ifndef DVBCSA_DISABLE_BLOCK
-  dvbcsa_bs_block_decrypt_batch(key, pcks, maxlen);
+  dvbcsa_bs_block_decrypt_batch(key, &pbuf, maxlen);
 #endif
 
   BS_EMPTY ();                  // restore CPU multimedia state
+
+  dvbcsa_pkt_buf_store(&pbuf, pcks);
 }
 
 void dvbcsa_bs_encrypt(const struct dvbcsa_bs_key_s *key,
                        const struct dvbcsa_bs_batch_s *pcks,
                        unsigned int maxlen)
 {
+  struct dvbcsa_bs_pkt_buf pbuf;
+
 #ifdef HAVE_ASSERT_H
   assert(maxlen % 8 == 0);
+  assert(maxlen <= DVBCSA_BS_MAX_PACKET_LEN);
 #endif
 
+  dvbcsa_pkt_buf_load(&pbuf, pcks, maxlen);
+
 #ifndef DVBCSA_DISABLE_BLOCK
-  dvbcsa_bs_block_encrypt_batch(key, pcks, maxlen);
+  dvbcsa_bs_block_encrypt_batch(key, &pbuf, maxlen);
 #endif
 #ifndef DVBCSA_DISABLE_STREAM
-  dvbcsa_bs_stream_cipher_batch(key, pcks, maxlen);
+  dvbcsa_bs_stream_cipher_batch(key, &pbuf, maxlen);
 #endif
 
   BS_EMPTY ();                  // restore CPU multimedia state
+
+  dvbcsa_pkt_buf_store(&pbuf, pcks);
 }
 
 struct dvbcsa_bs_key_s * dvbcsa_bs_key_alloc(void)

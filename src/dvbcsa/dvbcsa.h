@@ -68,6 +68,9 @@ void dvbcsa_encrypt (const struct dvbcsa_key_s *key,
         Parallel bitslice CSA implemetation API
  */
 
+/** maximum allowed length of a packet */
+#define DVBCSA_BS_MAX_PACKET_LEN 184
+
 /** packets batch structure, describe each data packet payload to process */
 struct dvbcsa_bs_batch_s
 {

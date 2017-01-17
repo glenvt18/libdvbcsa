@@ -26,6 +26,7 @@
 #ifndef DVBCSA_BS_H_
 #define DVBCSA_BS_H_
 
+#include "dvbcsa/dvbcsa.h"
 #include "dvbcsa_pv.h"
 
 #if defined(DVBCSA_USE_UINT64)
@@ -59,28 +60,46 @@ struct dvbcsa_bs_key_s
   dvbcsa_bs_word_t      stream[DVBCSA_CWBITS_SIZE];
 };
 
+#if DVBCSA_BS_MAX_PACKET_LEN % 8 != 0
+#error DVBCSA_BS_MAX_PACKET_LEN must be a multiple of 8
+#endif
+
+#define BS_PKT_BLOCKS8  DVBCSA_BS_MAX_PACKET_LEN / 8
+
+typedef union {
+        uint64_t u64;
+        uint32_t u32[2];
+} dvbcsa_bs_block8_t;
+
+struct dvbcsa_bs_pkt_buf {
+    int n_packets;
+    unsigned int maxlen;
+    unsigned int len8[BS_BATCH_SIZE];
+    dvbcsa_bs_block8_t data[BS_BATCH_SIZE * BS_PKT_BLOCKS8];
+};
+
 void dvbcsa_bs_stream_cipher_batch(const struct dvbcsa_bs_key_s *key,
-                                   const struct dvbcsa_bs_batch_s *pcks,
+                                   struct dvbcsa_bs_pkt_buf *pkt_buf,
                                    unsigned int maxlen);
 
 void dvbcsa_bs_block_decrypt_batch(const struct dvbcsa_bs_key_s *key,
-                                   const struct dvbcsa_bs_batch_s *pcks,
+                                   struct dvbcsa_bs_pkt_buf *pkt_buf,
                                    unsigned int maxlen);
 
 void dvbcsa_bs_block_encrypt_batch(const struct dvbcsa_bs_key_s *key,
-                                   const struct dvbcsa_bs_batch_s *pcks,
+                                   struct dvbcsa_bs_pkt_buf *pkt_buf,
                                    unsigned int maxlen);
 
-void dvbcsa_bs_block_transpose_in(dvbcsa_bs_word_t *out, const struct dvbcsa_bs_batch_s *pcks,
-                                  unsigned int offset);
-
-void dvbcsa_bs_block_transpose_out(dvbcsa_bs_word_t *in, const struct dvbcsa_bs_batch_s *pcks,
+void dvbcsa_bs_block_transpose_in(dvbcsa_bs_word_t *out, const struct dvbcsa_bs_pkt_buf *pkt_buf,
                                    unsigned int offset);
 
-void dvbcsa_bs_stream_transpose_out(const struct dvbcsa_bs_batch_s *pcks,
-                                    unsigned int index, dvbcsa_bs_word_t *row);
+void dvbcsa_bs_block_transpose_out_and_xor(dvbcsa_bs_word_t *in, struct dvbcsa_bs_pkt_buf *pkt_buf,
+                                   unsigned int offset, int encrypt);
 
-void dvbcsa_bs_stream_transpose_in(const struct dvbcsa_bs_batch_s *pcks,
+void dvbcsa_bs_stream_transpose_out(struct dvbcsa_bs_pkt_buf *pkt_buf,
+                                   unsigned int index, dvbcsa_bs_word_t *row);
+
+void dvbcsa_bs_stream_transpose_in(const struct dvbcsa_bs_pkt_buf *pkt_buf,
                                    dvbcsa_bs_word_t *row);
 
 

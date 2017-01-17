@@ -196,37 +196,24 @@ dvbcsa_bs_block_decrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_
 
 DVBCSA_INLINE static inline void
 dvbcsa_bs_block_decrypt_block(const struct dvbcsa_bs_key_s *key,
-                              const struct dvbcsa_bs_batch_s *pcks,
+                              struct dvbcsa_bs_pkt_buf *pkt_buf,
                               unsigned int offset)
 {
-  dvbcsa_bs_word_t      r[8 * (8 + 56)];
+  dvbcsa_bs_word_t r[8 * (8 + 56)];
 
-  dvbcsa_bs_block_transpose_in(r + 8 * 56, pcks, offset);
+  dvbcsa_bs_block_transpose_in(r + 8 * 56, pkt_buf, offset);
   dvbcsa_bs_block_decrypt_register(key->block, r);
-  dvbcsa_bs_block_transpose_out(r, pcks, offset);
+  dvbcsa_bs_block_transpose_out_and_xor(r, pkt_buf, offset, 0);
 }
 
 void dvbcsa_bs_block_decrypt_batch(const struct dvbcsa_bs_key_s *key,
-                                   const struct dvbcsa_bs_batch_s *pcks,
+                                   struct dvbcsa_bs_pkt_buf *pkt_buf,
                                    unsigned int maxlen)
 {
-  unsigned int  i;
+  unsigned int i;
 
-  /* decrypt first block */
-  dvbcsa_bs_block_decrypt_block(key, pcks, 0);
-
-  for (i = 8; i < maxlen; i += 8)
-    {
-      unsigned int      g;
-
-      /* chained cipher XOR */
-      for (g = 0; pcks[g].data; g++)
-        if (i < (pcks[g].len & (unsigned)~0x7))
-          dvbcsa_xor_64(pcks[g].data + i - 8, pcks[g].data + i);
-
-      /* decrypt other blocks */
-      dvbcsa_bs_block_decrypt_block(key, pcks, i);
-    }
+  for (i = 0; i < maxlen; i += 8)
+    dvbcsa_bs_block_decrypt_block(key, pkt_buf, i);
 }
 
 DVBCSA_INLINE static inline void
@@ -298,35 +285,23 @@ dvbcsa_bs_block_encrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_
 
 DVBCSA_INLINE static inline void
 dvbcsa_bs_block_encrypt_block(const struct dvbcsa_bs_key_s *key,
-                              const struct dvbcsa_bs_batch_s *pcks,
+                              struct dvbcsa_bs_pkt_buf *pkt_buf,
                               unsigned int offset)
 {
-  dvbcsa_bs_word_t      r[8 * (8 + 56)];
+  dvbcsa_bs_word_t r[8 * (8 + 56)];
 
-  dvbcsa_bs_block_transpose_in(r, pcks, offset);
+  dvbcsa_bs_block_transpose_in(r, pkt_buf, offset);
   dvbcsa_bs_block_encrypt_register(key->block, r);
-  dvbcsa_bs_block_transpose_out(r + 8 * 56, pcks, offset);
+  dvbcsa_bs_block_transpose_out_and_xor(r + 8 * 56, pkt_buf, offset, 1);
 }
 
 void dvbcsa_bs_block_encrypt_batch(const struct dvbcsa_bs_key_s *key,
-                                   const struct dvbcsa_bs_batch_s *pcks,
+                                   struct dvbcsa_bs_pkt_buf *pkt_buf,
                                    unsigned int maxlen)
 {
   int   i;
 
-  dvbcsa_bs_block_encrypt_block(key, pcks, maxlen - 8);
-
-  for (i = maxlen - 16; i >= 0; i -= 8)
-    {
-      unsigned int      g;
-
-      /* chained cipher XOR */
-      for (g = 0; pcks[g].data; g++)
-        if (i + 8 < (pcks[g].len & (unsigned)~0x7))
-          dvbcsa_xor_64(pcks[g].data + i, pcks[g].data + i + 8);
-
-      /* encrypt other blocks */
-      dvbcsa_bs_block_encrypt_block(key, pcks, i);
-    }
+  for (i = maxlen - 8; i >= 0; i -= 8)
+    dvbcsa_bs_block_encrypt_block(key, pkt_buf, i);
 }
 

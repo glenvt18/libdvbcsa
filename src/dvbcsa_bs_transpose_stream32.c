@@ -98,53 +98,36 @@ static void dvbcsa_bs_matrix_transpose_64x32(dvbcsa_bs_word_t *row)
     }
 }
 
-void dvbcsa_bs_stream_transpose_in(const struct dvbcsa_bs_batch_s *pcks, dvbcsa_bs_word_t *row)
+void dvbcsa_bs_stream_transpose_in(const struct dvbcsa_bs_pkt_buf *pkt_buf,
+                                   dvbcsa_bs_word_t *row)
 {
+  uint32_t *p = (uint32_t *)row;
+  const dvbcsa_bs_block8_t *block = pkt_buf->data;
   int i;
 
-  for (i = 0; pcks[i].data; i++)
-    if (pcks[i].len >= 8)
-      {
-        dvbcsa_copy_32((uint8_t *)(row + i), pcks[i].data);
-        dvbcsa_copy_32((uint8_t *)(row + i + 32), pcks[i].data + 4);
-      }
-
-  dvbcsa_bs_matrix_transpose_64x32(row);
-}
-
-void dvbcsa_bs_stream_transpose_out(const struct dvbcsa_bs_batch_s *pcks,
-                unsigned int index, dvbcsa_bs_word_t *row)
-{
-  int i, j;
-  uint8_t *p1, *p2;
-
-  dvbcsa_bs_matrix_transpose_64x32(row);
-
-  p1 = (uint8_t *)row;
-  p2 = (uint8_t *)(row + BS_BATCH_SIZE);
-  for (; pcks->data; pcks++, p1 += 4, p2 += 4)
+  for (i = 0; i < pkt_buf->n_packets; i++)
     {
-      if (index + 4 <= pcks->len)
-        {
-            dvbcsa_xor_32(pcks->data + index, p1);
-        }
-      else
-        {
-          for (j = 0, i = index; i < pcks->len; i++, j++)
-             pcks->data[i] ^= p1[j];
-          continue;
-        }
-      if (index + 8 <= pcks->len)
-        {
-            dvbcsa_xor_32(pcks->data + index + 4, p2);
-        }
-      else
-        {
-          for (j = 0, i = index + 4; i < pcks->len; i++, j++)
-             pcks->data[i] ^= p2[j];
-          continue;
-        }
+      p[i] = block->u32[0];
+      p[i + 32] = block->u32[1];
+      block += BS_PKT_BLOCKS8;
     }
 
+  dvbcsa_bs_matrix_transpose_64x32(row);
 }
 
+void dvbcsa_bs_stream_transpose_out(struct dvbcsa_bs_pkt_buf *pkt_buf,
+                                   unsigned int index, dvbcsa_bs_word_t *row)
+{
+  uint32_t *p = (uint32_t *)row;
+  dvbcsa_bs_block8_t *block = pkt_buf->data + index / 8;
+  int i;
+
+  dvbcsa_bs_matrix_transpose_64x32(row);
+
+  for (i = 0; i < pkt_buf->n_packets; i++)
+    {
+      block->u32[0] ^= p[i];
+      block->u32[1] ^= p[i + 32];
+      block += BS_PKT_BLOCKS8;
+    }
+}

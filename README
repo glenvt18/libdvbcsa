@@ -101,7 +101,8 @@ processing  functions. Packet  greater than  this limit  will  only be
 partially  processed. It  must  be  a multiple  of  8. This  parameter
 directly  control algorithm  cycles  count (and  processing time)  and
 should be  kept as low as  possible. When processing  Mpeg TS packets,
-it should be 184.
+it should be 184.  The maximum value is  DVBCSA_BS_MAX_PACKET_LEN (184
+bytes).
 
 Encryption and decryption batch processing functions are:
 
