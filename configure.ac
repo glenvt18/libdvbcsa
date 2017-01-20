@@ -3,12 +3,16 @@ AC_PREREQ(2.50)
 
 AC_CANONICAL_HOST
 
+AC_CONFIG_MACRO_DIR([m4])
+
 AC_ARG_ENABLE(debug, AC_HELP_STRING(--enable-debug, [Enable debug]), enable_debug=$enableval, enable_debug=no)
 
 if test "$enable_debug" = "yes" ; then
-    GCC_CFLAGS="$CFLAGS -g -DDVBCSA_DEBUG -D_XOPEN_SOURCE=600"
+    GCC_CFLAGS="$CFLAGS -DDVBCSA_DEBUG -D_XOPEN_SOURCE=600"
+    GCC_OPTIMIZE="-g"
 else
-    GCC_CFLAGS="$CFLAGS -O3 -funroll-loops -fomit-frame-pointer -D_XOPEN_SOURCE=600"
+    GCC_CFLAGS="$CFLAGS -D_XOPEN_SOURCE=600"
+    GCC_OPTIMIZE="-O3 -funroll-loops -fomit-frame-pointer"
 fi
 
 AC_ARG_ENABLE(uint32, AC_HELP_STRING(--enable-uint32, [Use native 32 bits integers for bitslice]), enable_uint32=$enableval, enable_uint32=no)
@@ -19,12 +23,12 @@ AC_ARG_ENABLE(ssse3, AC_HELP_STRING(--enable-ssse3, [Use SSSE3 for bitslice]), s
 AC_ARG_ENABLE(altivec, AC_HELP_STRING(--enable-altivec, [Use AltiVec for bitslice]), altivec_debug=$enableval, enable_altivec=no)
 AC_ARG_ENABLE(neon, AC_HELP_STRING(--enable-neon, [Use NEON for bitslice]), neon_debug=$enableval, enable_neon=no)
 
-AM_INIT_AUTOMAKE(libdvbcsa, 1.1.0)
+AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS(config.h)
 
 AC_PROG_CC
 
-AM_PROG_LIBTOOL 
+AM_PROG_LIBTOOL
 
 AC_LANG(C)
 
@@ -41,6 +45,10 @@ AC_C_BIGENDIAN(
  AC_MSG_ERROR(unknown endianess),
  AC_MSG_ERROR(universial endianess not supported)
 )
+
+for flag in $GCC_OPTIMIZE; do
+     AX_CHECK_COMPILE_FLAG([$flag], [GCC_CFLAGS="$GCC_CFLAGS $flag"])
+done
 
 if test "$enable_mmx" = "yes" ; then
      AC_DEFINE(DVBCSA_USE_MMX, 1, Using MMX bitslice.)
@@ -74,13 +82,13 @@ elif test "$enable_uint64" = "yes" ; then
 
 else
      case $ac_cv_sizeof_long in
-     	  8)
-	       AC_DEFINE(DVBCSA_USE_UINT64, 1, Using 64 bits integer bitslice.)
-	  ;;
-	  *)
-	       transpose_32=yes
-	       AC_DEFINE(DVBCSA_USE_UINT32, 1, Using 32 bits integer bitslice.)
-     	  ;;
+          8)
+               AC_DEFINE(DVBCSA_USE_UINT64, 1, Using 64 bits integer bitslice.)
+          ;;
+          *)
+               transpose_32=yes
+               AC_DEFINE(DVBCSA_USE_UINT32, 1, Using 32 bits integer bitslice.)
+          ;;
      esac
 fi
 
@@ -95,10 +103,10 @@ AC_CHECK_FUNC(posix_memalign, AC_DEFINE(HAVE_POSIX_MEMALIGN, 1, posix_memalign i
 AC_MSG_CHECKING([_mm_malloc availability])
 AC_TRY_LINK([#include <mm_malloc.h>], [_mm_malloc(8,8);],
     [
-	AC_DEFINE(HAVE_MM_MALLOC, 1, _mm_malloc is available)
-	AC_MSG_RESULT([found])
+        AC_DEFINE(HAVE_MM_MALLOC, 1, _mm_malloc is available)
+        AC_MSG_RESULT([found])
     ],[
-	AC_MSG_RESULT([no])
+        AC_MSG_RESULT([no])
     ])
 
 AC_OUTPUT([
