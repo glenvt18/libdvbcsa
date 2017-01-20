@@ -29,9 +29,16 @@
 /missing
 /stamp-h1
 /test-driver
+/m4/libtool.m4
+/m4/lt*.m4
 
+**/tags
 *.swp
 *.swo
+
+/test-suite.log
+/test/*.log
+/test/*.trs
 
 /test/benchbitslice
 /test/benchbitsliceks
