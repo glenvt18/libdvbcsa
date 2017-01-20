@@ -12,7 +12,7 @@ if test "$enable_debug" = "yes" ; then
     GCC_OPTIMIZE="-g"
 else
     GCC_CFLAGS="$CFLAGS -D_XOPEN_SOURCE=600"
-    GCC_OPTIMIZE="-O3 -funroll-loops -fomit-frame-pointer"
+    GCC_OPTIMIZE="-O3 -funroll-loops -fomit-frame-pointer -fno-tree-vectorize"
 fi
 
 AC_ARG_ENABLE(uint32, AC_HELP_STRING(--enable-uint32, [Use native 32 bits integers for bitslice]), enable_uint32=$enableval, enable_uint32=no)
