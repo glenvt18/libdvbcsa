@@ -209,13 +209,26 @@ void dvbcsa_bs_stream_transpose_out(struct dvbcsa_bs_pkt_buf *pkt_buf,
 {
   uint64_t *p = (uint64_t *)row;
   dvbcsa_bs_block8_t *block = pkt_buf->data + index / 8;
-  int i;
+  int i, n_pkt2;
 
   dvbcsa_bs_matrix_transpose_64x(row);
 
-  for (i = 0; i < pkt_buf->n_packets; i++)
+  n_pkt2 = pkt_buf->n_packets & (unsigned)~0x1;
+  for (i = 0; i < n_pkt2;)
     {
-      block->u64 ^= *p++;
+      uint64_t a, b, c, d;
+      a = block[0].u64;
+      b = p[i + 0];
+      c = block[BS_PKT_BLOCKS8].u64;
+      d = p[i + 1];
+      block[0].u64 = a ^ b;
+      block[BS_PKT_BLOCKS8].u64 = c ^ d;
+      block += BS_PKT_BLOCKS8 * 2;
+      i += 2;
+    }
+  for (; i < pkt_buf->n_packets; i++)
+    {
+      block->u64 ^= p[i];
       block += BS_PKT_BLOCKS8;
     }
 }

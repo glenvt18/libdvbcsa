@@ -54,6 +54,11 @@
 # error No dvbcsa word size defined
 #endif
 
+#define DVBCSA_UNROLL2(op...) op op
+#define DVBCSA_UNROLL4(op...) DVBCSA_UNROLL2(op) DVBCSA_UNROLL2(op)
+#define DVBCSA_UNROLL8(op...) DVBCSA_UNROLL4(op) DVBCSA_UNROLL4(op)
+#define DVBCSA_UNROLL16(op...) DVBCSA_UNROLL8(op) DVBCSA_UNROLL8(op)
+
 struct dvbcsa_bs_key_s
 {
   dvbcsa_bs_word_t      block[DVBCSA_KEYSBUFF_SIZE];
@@ -67,15 +72,15 @@ struct dvbcsa_bs_key_s
 #define BS_PKT_BLOCKS8  DVBCSA_BS_MAX_PACKET_LEN / 8
 
 typedef union {
-        uint64_t u64;
-        uint32_t u32[2];
+  uint64_t u64;
+  uint32_t u32[2];
 } dvbcsa_bs_block8_t;
 
 struct dvbcsa_bs_pkt_buf {
-    int n_packets;
-    unsigned int maxlen;
-    unsigned int len8[BS_BATCH_SIZE];
-    dvbcsa_bs_block8_t data[BS_BATCH_SIZE * BS_PKT_BLOCKS8];
+  int n_packets;
+  unsigned int maxlen;
+  unsigned int len8[BS_BATCH_SIZE];
+  dvbcsa_bs_block8_t data[BS_BATCH_SIZE * BS_PKT_BLOCKS8];
 };
 
 void dvbcsa_bs_stream_cipher_batch(const struct dvbcsa_bs_key_s *key,

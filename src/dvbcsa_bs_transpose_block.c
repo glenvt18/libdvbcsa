@@ -69,7 +69,24 @@ void dvbcsa_bs_block_transpose_in(dvbcsa_bs_word_t *out,
   const dvbcsa_bs_block8_t *block = pkt_buf->data + offset / 8;
   int i;
 
-  for (i = 0; i < pkt_buf->n_packets; i++, block += BS_PKT_BLOCKS8)
+  int n_pkt4 = pkt_buf->n_packets & (unsigned)~0x3;
+  for (i = 0; i < n_pkt4;)
+    {
+      uint32_t a, b, c, d;
+      DVBCSA_UNROLL2(
+        a = block[0].u32[0];
+        b = block[0].u32[1];
+        c = block[BS_PKT_BLOCKS8].u32[0];
+        d = block[BS_PKT_BLOCKS8].u32[1];
+        ri[i] = a;
+        ri[i + BS_BATCH_SIZE] = b;
+        ri[i + 1] = c;
+        ri[i + 1 + BS_BATCH_SIZE] = d;
+        i += 2;
+        block += BS_PKT_BLOCKS8 * 2;
+      )
+    }
+  for (; i < pkt_buf->n_packets; i++, block += BS_PKT_BLOCKS8)
     {
       ri[i] = block->u32[0];
       ri[i + BS_BATCH_SIZE] = block->u32[1];
@@ -101,7 +118,23 @@ void dvbcsa_bs_block_transpose_out_and_xor(dvbcsa_bs_word_t *in,
     }
   else if (encrypt)
     {
-      for (i = 0; i < pkt_buf->n_packets; i++, block += BS_PKT_BLOCKS8)
+      int n_pkt4 = pkt_buf->n_packets & (unsigned)~0x3;
+      for (i = 0; i < n_pkt4;)
+        {
+          DVBCSA_UNROLL4(
+            if (offset < pkt_buf->len8[i])
+              {
+                dvbcsa_bs_block8_t b;
+                b.u32[0] = ri[i];
+                b.u32[1] = ri[i + BS_BATCH_SIZE];
+                block[-1].u64 ^= b.u64;
+                block[0].u64 = b.u64;
+              }
+            i++;
+            block += BS_PKT_BLOCKS8;
+          )
+        }
+      for (; i < pkt_buf->n_packets; i++, block += BS_PKT_BLOCKS8)
         if (offset < pkt_buf->len8[i])
           {
             dvbcsa_bs_block8_t b;
@@ -113,7 +146,23 @@ void dvbcsa_bs_block_transpose_out_and_xor(dvbcsa_bs_word_t *in,
     }
   else
     {
-      for (i = 0; i < pkt_buf->n_packets; i++, block += BS_PKT_BLOCKS8)
+      int n_pkt4 = pkt_buf->n_packets & (unsigned)~0x3;
+      for (i = 0; i < n_pkt4;)
+        {
+          DVBCSA_UNROLL4(
+            if (offset < pkt_buf->len8[i])
+              {
+                dvbcsa_bs_block8_t b;
+                b.u32[0] = ri[i];
+                b.u32[1] = ri[i + BS_BATCH_SIZE];
+                block[-1].u64 ^= block[0].u64;
+                block[0].u64 = b.u64;
+              }
+            i++;
+            block += BS_PKT_BLOCKS8;
+          )
+        }
+      for (; i < pkt_buf->n_packets; i++, block += BS_PKT_BLOCKS8)
         if (offset < pkt_buf->len8[i])
           {
             dvbcsa_bs_block8_t b;
