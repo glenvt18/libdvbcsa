@@ -57,6 +57,19 @@
 #define DVBCSA_INLINE
 #endif
 
+/** types used for type-punning */
+#ifdef HAVE_ATTRIBUTE_MAY_ALIAS
+typedef uint8_t  __attribute__((may_alias)) dvbcsa_u8_aliasing_t;
+typedef uint16_t __attribute__((may_alias)) dvbcsa_u16_aliasing_t;
+typedef uint32_t __attribute__((may_alias)) dvbcsa_u32_aliasing_t;
+typedef uint64_t __attribute__((may_alias)) dvbcsa_u64_aliasing_t;
+#else
+typedef uint8_t  dvbcsa_u8_aliasing_t;
+typedef uint16_t dvbcsa_u16_aliasing_t;
+typedef uint32_t dvbcsa_u32_aliasing_t;
+typedef uint64_t dvbcsa_u64_aliasing_t;
+#endif
+
 void worddump (const char *str, const void *data, size_t len, size_t ws);
 
 #define DVBCSA_DATA_SIZE        8

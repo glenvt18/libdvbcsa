@@ -73,8 +73,8 @@ static const uint16_t dvbcsa_block_sbox_perm[256] =
 
 #define BLOCK_SBOX_PERMUTE(in_buf, out_buf) \
     { \
-    uint8_t *src = (uint8_t *)in_buf; \
-    uint16_t *dst = (uint16_t *)out_buf; \
+    dvbcsa_u8_aliasing_t *src = (dvbcsa_u8_aliasing_t *)in_buf; \
+    dvbcsa_u16_aliasing_t *dst = (dvbcsa_u16_aliasing_t *)out_buf; \
     uint8_t a, b, c, d; \
     int j; \
     for (j = 0; j < BS_BATCH_BYTES * 8; j += 4) \
@@ -94,8 +94,8 @@ static const uint16_t dvbcsa_block_sbox_perm[256] =
 
 #define BLOCK_SBOX(in_buf, out_buf) \
     { \
-    uint8_t *src = (uint8_t *)in_buf; \
-    uint8_t *dst = (uint8_t *)out_buf; \
+    dvbcsa_u8_aliasing_t *src = (dvbcsa_u8_aliasing_t *)in_buf; \
+    dvbcsa_u8_aliasing_t *dst = (dvbcsa_u8_aliasing_t *)out_buf; \
     uint8_t a, b, c, d; \
     int j; \
     for (j = 0; j < BS_BATCH_BYTES * 8; j += 4) \

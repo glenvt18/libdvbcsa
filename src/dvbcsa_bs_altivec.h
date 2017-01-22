@@ -101,7 +101,7 @@ static DVBCSA_INLINE dvbcsa_bs_word_t get_bs_val8( uint8_t val, dvbcsa_bs_word_t
 #define BS_SHL(a, n)    ({ dvbcsa_bs_word_t x = SHVAL_##n; vec_sll(vec_slo((a), x), x); })
 #define BS_SHR(a, n)    ({ dvbcsa_bs_word_t x = SHVAL_##n; vec_srl(vec_sro((a), x), x); })
 
-#define BS_EXTRACT8(a, n) ((uint8_t*)&(a))[15 - (n)]
+#define BS_EXTRACT8(a, n) ((dvbcsa_u8_aliasing_t *)&(a))[15 - (n)]
 
 #define BS_EMPTY()
 

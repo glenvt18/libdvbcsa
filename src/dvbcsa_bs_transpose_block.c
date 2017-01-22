@@ -65,7 +65,7 @@ void dvbcsa_bs_block_transpose_in(dvbcsa_bs_word_t *out,
                 const struct dvbcsa_bs_pkt_buf *pkt_buf,
                 unsigned int offset)
 {
-  uint32_t *ri = (uint32_t *)out;
+  dvbcsa_u32_aliasing_t *ri = (dvbcsa_u32_aliasing_t *)out;
   const dvbcsa_bs_block8_t *block = pkt_buf->data + offset / 8;
   int i;
 
@@ -101,7 +101,7 @@ void dvbcsa_bs_block_transpose_out_and_xor(dvbcsa_bs_word_t *in,
                 struct dvbcsa_bs_pkt_buf *pkt_buf,
                 unsigned int offset, int encrypt)
 {
-  uint32_t *ri = (uint32_t *)in;
+  dvbcsa_u32_aliasing_t *ri = (dvbcsa_u32_aliasing_t *)in;
   dvbcsa_bs_block8_t *block = pkt_buf->data + offset / 8;
   int i;
 

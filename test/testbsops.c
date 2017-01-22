@@ -247,14 +247,14 @@ main            (void)
   /* block cipher sbox + perm */
   dvbcsa_bs_word_t d, buf_in[2], buf_out[4];
   int i;
-  uint8_t *src, *dst;
+  dvbcsa_u8_aliasing_t *src, *dst;
 
   a = BS_VAL(0x0001020304050607LL, 0x08090a0b0c0d0e0fLL);
   b = BS_VAL(0x8f8e8d8c8b8a8988LL, 0x8786858483828180LL);
   buf_in[0] = a;
   buf_in[1] = b;
-  src = (uint8_t *)buf_in;
-  dst = (uint8_t *)buf_out;
+  src = (dvbcsa_u8_aliasing_t *)buf_in;
+  dst = (dvbcsa_u8_aliasing_t *)buf_out;
   for (i = 0; i < BS_BATCH_BYTES * 2; i++)
     {
       dst[i * 2] = src[i];

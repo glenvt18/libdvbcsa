@@ -101,7 +101,7 @@ static void dvbcsa_bs_matrix_transpose_64x32(dvbcsa_bs_word_t *row)
 void dvbcsa_bs_stream_transpose_in(const struct dvbcsa_bs_pkt_buf *pkt_buf,
                                    dvbcsa_bs_word_t *row)
 {
-  uint32_t *p = (uint32_t *)row;
+  dvbcsa_u32_aliasing_t *p = (dvbcsa_u32_aliasing_t *)row;
   const dvbcsa_bs_block8_t *block = pkt_buf->data;
   int i;
 
@@ -118,7 +118,7 @@ void dvbcsa_bs_stream_transpose_in(const struct dvbcsa_bs_pkt_buf *pkt_buf,
 void dvbcsa_bs_stream_transpose_out(struct dvbcsa_bs_pkt_buf *pkt_buf,
                                    unsigned int index, dvbcsa_bs_word_t *row)
 {
-  uint32_t *p = (uint32_t *)row;
+  dvbcsa_u32_aliasing_t *p = (dvbcsa_u32_aliasing_t *)row;
   dvbcsa_bs_block8_t *block = pkt_buf->data + index / 8;
   int i;
 

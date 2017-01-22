@@ -46,10 +46,6 @@ AC_C_BIGENDIAN(
  AC_MSG_ERROR(universial endianess not supported)
 )
 
-for flag in $GCC_OPTIMIZE; do
-     AX_CHECK_COMPILE_FLAG([$flag], [GCC_CFLAGS="$GCC_CFLAGS $flag"])
-done
-
 if test "$enable_mmx" = "yes" ; then
      AC_DEFINE(DVBCSA_USE_MMX, 1, Using MMX bitslice.)
      GCC_CFLAGS="$GCC_CFLAGS -mmmx"
@@ -93,6 +89,41 @@ else
 fi
 
 AM_CONDITIONAL(TRANSPOSE_32, test "$transpose_32" = "yes")
+
+# Use __attribute__((may_alias)) if a gcc-compatible C compiler is really GCC.
+# Otherwise, disable strict-aliasing optimisation completely.
+
+AC_MSG_CHECKING([whether __attribute__((may_alias)) is available for types])
+AC_COMPILE_IFELSE(
+    [
+        AC_LANG_SOURCE([[
+#if defined(__GNUC__) && !defined(__clang__) && !defined(__INTEL_COMPILER)
+typedef int __attribute__((may_alias)) int_a;int_a a;
+#else
+fire an error here
+#endif
+        ]])
+    ],
+    [
+        AS_IF([test -s conftest.err],
+            [
+                GCC_OPTIMIZE="$GCC_OPTIMIZE -fno-strict-aliasing"
+                AC_MSG_RESULT([no])
+            ],
+            [
+                AC_DEFINE(HAVE_ATTRIBUTE_MAY_ALIAS,[1],[Define to 1 if __attribute__((may_alias)) works])
+                AC_MSG_RESULT([yes])
+            ])
+    ],
+    [
+        GCC_OPTIMIZE="$GCC_OPTIMIZE -fno-strict-aliasing"
+        AC_MSG_RESULT([no])
+    ]
+)
+
+for flag in $GCC_OPTIMIZE; do
+    AX_CHECK_COMPILE_FLAG([$flag], [GCC_CFLAGS="$GCC_CFLAGS $flag"])
+done
 
 if test "$GCC" = "yes" ; then
     CFLAGS="-Wall $GCC_CFLAGS"

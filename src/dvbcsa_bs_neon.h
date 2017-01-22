@@ -46,7 +46,7 @@ typedef uint64x2_t dvbcsa_bs_word_t;
 
 #define BS_SHL(a, n)    vshlq_n_u64 ((a), n)
 #define BS_SHR(a, n)    vshrq_n_u64 ((a), n)
-#define BS_EXTRACT8(a, n) (((uint8_t*)&(a))[n])
+#define BS_EXTRACT8(a, n) (((dvbcsa_u8_aliasing_t *)&(a))[n])
 
 #define BS_EMPTY()
 
@@ -84,7 +84,7 @@ typedef uint64x2_t dvbcsa_bs_word_t;
 /* block cipher 2-word load with byte-deinterleaving */
 #define BS_LOAD_DEINTERLEAVE_8(ptr, var_lo, var_hi) \
       {\
-      uint8x16x2_t tmp = vld2q_u8((uint8_t *)(ptr));\
+      uint8x16x2_t tmp = vld2q_u8((unsigned char *)(ptr));\
       var_lo = vreinterpretq_u64_u8(tmp.val[0]);\
       var_hi = vreinterpretq_u64_u8(tmp.val[1]);\
       }
