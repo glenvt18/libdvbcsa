@@ -26,6 +26,24 @@
 #include "dvbcsa/dvbcsa.h"
 #include "dvbcsa_bs.h"
 
+#ifdef DVBCSA_USE_ALT_SBOX
+
+#ifdef DVBCSA_ENDIAN_LITTLE
+#define BLOCK_ALT_SBOX_LOAD(src, a, b, c, d) \
+    a = (src) & 0xff; \
+    b = ((src) >>  8) & 0xff; \
+    c = ((src) >> 16) & 0xff; \
+    d = ((src) >> 24) & 0xff;
+#else
+#define BLOCK_ALT_SBOX_LOAD(src, a, b, c, d) \
+    a = ((src) >> 24) & 0xff; \
+    b = ((src) >> 16) & 0xff; \
+    c = ((src) >>  8) & 0xff; \
+    d = (src) & 0xff;
+#endif
+
+#endif
+
 /* SIMD targets which support loading streams of two interleaved bytes */
 #ifdef BS_LOAD_DEINTERLEAVE_8
 
@@ -71,6 +89,36 @@ static const uint16_t dvbcsa_block_sbox_perm[256] =
     0x388c, 0x1a89, 0xe166, 0x7ffd, 0xccb2, 0x5aa9, 0x9e9b, 0x09c0,
   };
 
+#ifdef DVBCSA_USE_ALT_SBOX
+
+#define BLOCK_SBOX_PERMUTE(in_buf, out_buf) \
+    { \
+    dvbcsa_u32_aliasing_t *src = (dvbcsa_u32_aliasing_t *)in_buf; \
+    dvbcsa_u16_aliasing_t *dst = (dvbcsa_u16_aliasing_t *)out_buf; \
+    uint32_t a, b, c, d; \
+    uint32_t s; \
+    int j; \
+    s = *src; \
+    for (j = 0; j < BS_BATCH_BYTES/4 * 8 - 1;) \
+      { \
+        j++; \
+        BLOCK_ALT_SBOX_LOAD(s, a, b, c, d) \
+        s = src[j]; \
+        dst[0] = dvbcsa_block_sbox_perm[a]; \
+        dst[1] = dvbcsa_block_sbox_perm[b]; \
+        dst[2] = dvbcsa_block_sbox_perm[c]; \
+        dst[3] = dvbcsa_block_sbox_perm[d]; \
+        dst += 4; \
+      } \
+      BLOCK_ALT_SBOX_LOAD(s, a, b, c, d) \
+      dst[0] = dvbcsa_block_sbox_perm[a]; \
+      dst[1] = dvbcsa_block_sbox_perm[b]; \
+      dst[2] = dvbcsa_block_sbox_perm[c]; \
+      dst[3] = dvbcsa_block_sbox_perm[d]; \
+    }
+
+#else
+
 #define BLOCK_SBOX_PERMUTE(in_buf, out_buf) \
     { \
     dvbcsa_u8_aliasing_t *src = (dvbcsa_u8_aliasing_t *)in_buf; \
@@ -88,6 +136,38 @@ static const uint16_t dvbcsa_block_sbox_perm[256] =
         dst[j + 2] = dvbcsa_block_sbox_perm[c]; \
         dst[j + 3] = dvbcsa_block_sbox_perm[d]; \
       } \
+    }
+
+#endif /* USE_ALT_SBOX */
+
+#else /* no BS_LOAD_DEINTERLEAVE_8 */
+
+#ifdef DVBCSA_USE_ALT_SBOX
+
+#define BLOCK_SBOX(in_buf, out_buf) \
+    { \
+    dvbcsa_u32_aliasing_t *src = (dvbcsa_u32_aliasing_t *)in_buf; \
+    dvbcsa_u8_aliasing_t *dst = (dvbcsa_u8_aliasing_t *)out_buf; \
+    uint32_t a, b, c, d; \
+    uint32_t s; \
+    int j; \
+    s = *src; \
+    for (j = 0; j < BS_BATCH_BYTES/4 * 8 - 1;) \
+      { \
+        j++; \
+        BLOCK_ALT_SBOX_LOAD(s, a, b, c, d) \
+        s = src[j]; \
+        dst[0] = dvbcsa_block_sbox[a]; \
+        dst[1] = dvbcsa_block_sbox[b]; \
+        dst[2] = dvbcsa_block_sbox[c]; \
+        dst[3] = dvbcsa_block_sbox[d]; \
+        dst += 4; \
+      } \
+      BLOCK_ALT_SBOX_LOAD(s, a, b, c, d) \
+      dst[0] = dvbcsa_block_sbox[a]; \
+      dst[1] = dvbcsa_block_sbox[b]; \
+      dst[2] = dvbcsa_block_sbox[c]; \
+      dst[3] = dvbcsa_block_sbox[d]; \
     }
 
 #else
@@ -111,6 +191,8 @@ static const uint16_t dvbcsa_block_sbox_perm[256] =
       } \
     }
 
+#endif /* DVBCSA_USE_ALT_SBOX */
+
 #define BLOCK_PERMUTE_LOGIC(in, out) \
     { \
     out = BS_OR( \
@@ -123,7 +205,7 @@ static const uint16_t dvbcsa_block_sbox_perm[256] =
                      BS_SHR (BS_AND (in, BS_VAL8(80)), 4))); \
     }
 
-#endif
+#endif /* BS_LOAD_DEINTERLEAVE_8 */
 
 DVBCSA_INLINE static inline void
 dvbcsa_bs_block_decrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_t *r)
