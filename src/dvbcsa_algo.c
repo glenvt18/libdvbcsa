@@ -27,7 +27,7 @@
 void dvbcsa_decrypt (const struct dvbcsa_key_s *key, uint8_t *data, unsigned int len)
 {
   unsigned int  alen = len & (unsigned)~0x7;
-  int       i;
+  unsigned int  i;
 
   if (len < 8)
     return;
