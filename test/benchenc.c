@@ -76,7 +76,7 @@ main            (void)
       for (i = 0; i < n; i++)
         dvbcsa_encrypt(key, data, TS_SIZE);
 
-        c += n;
+      c += n;
     }
 
   gettimeofday(&t1, NULL);
