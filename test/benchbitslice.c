@@ -32,16 +32,34 @@
 #include <assert.h>
 #endif
 
+#define BUFFER_SIZE 5 * 1000 * 1000
+
+#define TS_SIZE 188
+
+uint8_t *ts_buf;
+int ts_buf_head;
+
+uint8_t *get_packet(void)
+{
+  uint8_t *p = ts_buf + ts_buf_head;
+  ts_buf_head += TS_SIZE;
+  if (ts_buf_head + TS_SIZE > BUFFER_SIZE)
+    ts_buf_head = 0;
+  return p;
+}
+
 int
 main (void)
 {
   struct timeval                t0, t1;
   struct dvbcsa_bs_key_s        *ffkey = dvbcsa_bs_key_alloc();
-  unsigned int                  n, i, c = 0;
+  unsigned int                  n, i, k, c = 0;
   unsigned int                  gs = dvbcsa_bs_batch_size();
   uint8_t                       data[gs + 1][184];
   struct dvbcsa_bs_batch_s      pcks[gs + 1];
   uint8_t                       cw[8] = { 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, };
+
+  ts_buf = malloc(BUFFER_SIZE);
 
 #ifdef HAVE_ASSERT_H
   assert(ffkey != NULL);
@@ -82,8 +100,12 @@ main (void)
 #endif
 
       for (i = 0; i < n; i++)
-        dvbcsa_bs_decrypt(ffkey, pcks, 184);
-
+        {
+          for (k = 0; k < gs; k++)
+            pcks[k].data = get_packet() + 4;
+          pcks[k].data = NULL;
+          dvbcsa_bs_decrypt(ffkey, pcks, 184);
+        }
       c += n * gs;
     }
 
