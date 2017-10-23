@@ -45,6 +45,9 @@ static void dvbcsa_pkt_buf_load(struct dvbcsa_bs_pkt_buf *pkt_buf,
   int i;
   dvbcsa_bs_block8_t *block = pkt_buf->data;
 
+  /* make valgrind happy */
+  memset(block, 0, sizeof(pkt_buf->data));
+
   for (i = 0; pcks[i].data; i++, block += BS_PKT_BLOCKS8)
     {
       pkt_buf->len8[i] = pcks[i].len & (unsigned)~0x7;
