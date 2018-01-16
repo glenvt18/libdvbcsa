@@ -52,17 +52,16 @@ typedef __m256i dvbcsa_bs_word_t;
 #define BS_EMPTY()
 
 /* block cipher 2-word load with byte-deinterleaving */
-/* FIXME no idea about what it does, so its hard to modify...
 #define BS_LOAD_DEINTERLEAVE_8(ptr, var_lo, var_hi) \
       {\
       dvbcsa_bs_word_t a, b; \
-      a = _mm_load_si128((ptr)); \
-      b = _mm_load_si128((ptr) + 1); \
-      a = _mm_shuffle_epi8(a, _mm_set_epi8(15,13,11,9,7,5,3,1,14,12,10,8,6,4,2,0)); \
-      b = _mm_shuffle_epi8(b, _mm_set_epi8(15,13,11,9,7,5,3,1,14,12,10,8,6,4,2,0)); \
-      var_lo = _mm_unpacklo_epi64(a, b); \
-      var_hi = _mm_unpackhi_epi64(a, b); \
+      a = _mm256_load_si256((ptr)); \
+      b = _mm256_load_si256((ptr) + 1); \
+      a = _mm256_shuffle_epi8(a, _mm256_set_epi8(31,27,23,19,15,11,7,3, 30,26,22,18,14,10,6,2, 29,25,21,17,13,9,5,1, 28,24,20,16,12,8,4,0)); \
+      b = _mm256_shuffle_epi8(b, _mm256_set_epi8(31,27,23,19,15,11,7,3, 30,26,22,18,14,10,6,2, 29,25,21,17,13,9,5,1, 28,24,20,16,12,8,4,0)); \
+      var_lo = _mm256_unpacklo_epi64(a, b); \
+      var_hi = _mm256_unpackhi_epi64(a, b); \
       }
-*/
+
 #endif
 
