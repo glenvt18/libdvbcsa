@@ -44,6 +44,9 @@
 #elif defined(DVBCSA_USE_SSSE3)
 # include "dvbcsa_bs_sse.h"
 
+#elif defined(DVBCSA_USE_AVX2)
+# include "dvbcsa_bs_avx2.h"
+
 #elif defined(DVBCSA_USE_ALTIVEC)
 # include "dvbcsa_bs_altivec.h"
 

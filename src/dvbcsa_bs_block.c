@@ -119,6 +119,8 @@ static const uint16_t dvbcsa_block_sbox_perm[256] =
 
 #else
 
+#ifndef BLOCK_SBOX_PERMUTE
+
 #define BLOCK_SBOX_PERMUTE(in_buf, out_buf) \
     { \
     dvbcsa_u8_aliasing_t *src = (dvbcsa_u8_aliasing_t *)in_buf; \
@@ -137,6 +139,8 @@ static const uint16_t dvbcsa_block_sbox_perm[256] =
         dst[j + 3] = dvbcsa_block_sbox_perm[d]; \
       } \
     }
+
+#endif /* ifndef BLOCK_SBOX_PERMUTE */
 
 #endif /* USE_ALT_SBOX */
 

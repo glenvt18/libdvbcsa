@@ -20,6 +20,7 @@ AC_ARG_ENABLE(uint64, AC_HELP_STRING(--enable-uint64, [Use native 64 bits intege
 AC_ARG_ENABLE(mmx, AC_HELP_STRING(--enable-mmx, [Use MMX for bitslice]), mmx_debug=$enableval, enable_mmx=no)
 AC_ARG_ENABLE(sse2, AC_HELP_STRING(--enable-sse2, [Use SSE2 for bitslice]), sse2_debug=$enableval, enable_sse2=no)
 AC_ARG_ENABLE(ssse3, AC_HELP_STRING(--enable-ssse3, [Use SSSE3 for bitslice]), ssse3_debug=$enableval, enable_ssse3=no)
+AC_ARG_ENABLE(avx2, AC_HELP_STRING(--enable-avx2, [Use AVX2 for bitslice]), avx2_debug=$enableval, enable_avx2=no)
 AC_ARG_ENABLE(altivec, AC_HELP_STRING(--enable-altivec, [Use AltiVec for bitslice]), altivec_debug=$enableval, enable_altivec=no)
 AC_ARG_ENABLE(neon, AC_HELP_STRING(--enable-neon, [Use NEON for bitslice]), neon_debug=$enableval, enable_neon=no)
 AC_ARG_ENABLE(alt-sbox, AC_HELP_STRING(--enable-alt-sbox, [Use alternative sbox lookup, may be faster on some targets]), alt_sbox_debug=$enableval, enable_alt_sbox=no)
@@ -58,6 +59,10 @@ elif test "$enable_sse2" = "yes" ; then
 elif test "$enable_ssse3" = "yes" ; then
      AC_DEFINE(DVBCSA_USE_SSSE3, 1, Using SSSE3 bitslice.)
      GCC_CFLAGS="$GCC_CFLAGS -mssse3"
+
+elif test "$enable_avx2" = "yes" ; then
+     AC_DEFINE(DVBCSA_USE_AVX2, 1, Using AVX2 bitslice.)
+     GCC_CFLAGS="$GCC_CFLAGS -mavx2"
 
 elif test "$enable_altivec" = "yes" ; then
      AC_DEFINE(DVBCSA_USE_ALTIVEC, 1, Using AltiVec bitslice.)
