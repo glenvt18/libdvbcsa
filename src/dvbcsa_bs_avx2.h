@@ -26,9 +26,6 @@
 #ifndef DVBCSA_AVX_H_
 #define DVBCSA_AVX_H_
 
-#include <xmmintrin.h>
-#include <emmintrin.h>
-#include <tmmintrin.h>
 #include <immintrin.h>
 
 typedef __m256i dvbcsa_bs_word_t;
