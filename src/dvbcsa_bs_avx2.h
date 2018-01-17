@@ -56,12 +56,14 @@ typedef __m256i dvbcsa_bs_word_t;
 #define BS_LOAD_DEINTERLEAVE_8(ptr, var_lo, var_hi) \
       {\
       dvbcsa_bs_word_t a, b; \
-      a = _mm256_i64gather_epi64((const long long int *)(ptr), _mm256_set_epi64x(5,4,1,0), 8); \
-      b = _mm256_i64gather_epi64((const long long int *)(ptr), _mm256_set_epi64x(7,6,3,2), 8); \
+      a = _mm256_load_si256((ptr)); \
+      b = _mm256_load_si256((ptr) + 1); \
       a = _mm256_shuffle_epi8(a, _mm256_set_epi8(15,13,11,9,7,5,3,1, 14,12,10,8,6,4,2,0, 15,13,11,9,7,5,3,1, 14,12,10,8,6,4,2,0)); \
       b = _mm256_shuffle_epi8(b, _mm256_set_epi8(15,13,11,9,7,5,3,1, 14,12,10,8,6,4,2,0, 15,13,11,9,7,5,3,1, 14,12,10,8,6,4,2,0)); \
       var_lo = _mm256_unpacklo_epi64(a, b); \
       var_hi = _mm256_unpackhi_epi64(a, b); \
+      var_lo = _mm256_permute4x64_epi64(var_lo, 0xD8); \
+      var_hi = _mm256_permute4x64_epi64(var_hi, 0xD8); \
       }
 */
 
