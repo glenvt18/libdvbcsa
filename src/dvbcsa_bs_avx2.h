@@ -52,23 +52,17 @@ typedef __m256i dvbcsa_bs_word_t;
 #define BS_EMPTY()
 
 /* block cipher 2-word load with byte-deinterleaving */
+/* FIXME although it works, it's slower by 3% on core i5-6400
 #define BS_LOAD_DEINTERLEAVE_8(ptr, var_lo, var_hi) \
       {\
       dvbcsa_bs_word_t a, b; \
-      a = _mm256_load_si256((ptr)); \
-      b = _mm256_load_si256((ptr) + 1); \
+      a = _mm256_i64gather_epi64((const long long int *)(ptr), _mm256_set_epi64x(5,4,1,0), 8); \
+      b = _mm256_i64gather_epi64((const long long int *)(ptr), _mm256_set_epi64x(7,6,3,2), 8); \
       a = _mm256_shuffle_epi8(a, _mm256_set_epi8(15,13,11,9,7,5,3,1, 14,12,10,8,6,4,2,0, 15,13,11,9,7,5,3,1, 14,12,10,8,6,4,2,0)); \
       b = _mm256_shuffle_epi8(b, _mm256_set_epi8(15,13,11,9,7,5,3,1, 14,12,10,8,6,4,2,0, 15,13,11,9,7,5,3,1, 14,12,10,8,6,4,2,0)); \
       var_lo = _mm256_unpacklo_epi64(a, b); \
       var_hi = _mm256_unpackhi_epi64(a, b); \
-      uint64_t scratch, *swap = (uint64_t *)&var_lo; \
-      scratch = swap[1]; \
-      swap[1] = swap[2]; \
-      swap[2] = scratch; \
-      swap = (uint64_t *)&var_hi; \
-      scratch = swap[1]; \
-      swap[1] = swap[2]; \
-      swap[2] = scratch; \
       }
+*/
 #endif
 
