@@ -61,7 +61,14 @@ typedef __m256i dvbcsa_bs_word_t;
       b = _mm256_shuffle_epi8(b, _mm256_set_epi8(15,13,11,9,7,5,3,1, 14,12,10,8,6,4,2,0, 15,13,11,9,7,5,3,1, 14,12,10,8,6,4,2,0)); \
       var_lo = _mm256_unpacklo_epi64(a, b); \
       var_hi = _mm256_unpackhi_epi64(a, b); \
+      uint64_t scratch, *swap = (uint64_t *)&var_lo; \
+      scratch = swap[1]; \
+      swap[1] = swap[2]; \
+      swap[2] = scratch; \
+      swap = (uint64_t *)&var_hi; \
+      scratch = swap[1]; \
+      swap[1] = swap[2]; \
+      swap[2] = scratch; \
       }
-
 #endif
 
