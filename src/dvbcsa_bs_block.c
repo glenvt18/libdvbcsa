@@ -172,6 +172,9 @@ static const uint16_t dvbcsa_block_sbox_perm[256] =
 
 #else
 
+#ifdef DVBCSA_USE_AVX2
+#define BLOCK_SBOX(in_buf, out_buf) block_sbox_avx2(in_buf, out_buf);
+#else
 #define BLOCK_SBOX(in_buf, out_buf) \
     { \
     dvbcsa_u8_aliasing_t *src = (dvbcsa_u8_aliasing_t *)in_buf; \
@@ -191,6 +194,7 @@ static const uint16_t dvbcsa_block_sbox_perm[256] =
       } \
     }
 
+#endif /* DVBCSA_USE_AVX2 */
 #endif /* DVBCSA_USE_ALT_SBOX */
 
 #define BLOCK_PERMUTE_LOGIC(in, out) \
