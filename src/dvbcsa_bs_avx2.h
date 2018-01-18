@@ -52,7 +52,7 @@ typedef __m256i dvbcsa_bs_word_t;
 #define BS_EMPTY()
 
 /* block cipher 2-word load with byte-deinterleaving */
-/* FIXME although it works, it's slower by 3% on core i5-6400
+/*
 #define BS_LOAD_DEINTERLEAVE_8(ptr, var_lo, var_hi) \
       {\
       dvbcsa_bs_word_t a, b; \
