@@ -181,6 +181,7 @@ static inline void block_sbox_permute_interleave_avx(dvbcsa_bs_word_t *src, dvbc
 	for (j = 0; j < 8; j++) {
 		i = _mm256_load_si256(src + j);
 
+		//part 1
 		a = BS_AND(i, lsb_mask);
 		b = _mm256_i32gather_epi32(dvbcsa_block_sbox_perm, a, 2);
 		res1 = BS_AND(b, lsw_mask);
@@ -190,6 +191,7 @@ static inline void block_sbox_permute_interleave_avx(dvbcsa_bs_word_t *src, dvbc
 		b = _mm256_slli_epi32(b, 16);
 		res1 = BS_OR(res1, b);
 
+		//part 2
 		a = _mm256_shuffle_epi8(i, _mm256_set_epi8(0x80,0x80,0x80,14,0x80,0x80,0x80,10,0x80,0x80,0x80,6,0x80,0x80,0x80,2, 0x80,0x80,0x80,14,0x80,0x80,0x80,10,0x80,0x80,0x80,6,0x80,0x80,0x80,2));
 		b = _mm256_i32gather_epi32(dvbcsa_block_sbox_perm, a, 2);
 		res2 = BS_AND(b, lsw_mask);
@@ -199,18 +201,14 @@ static inline void block_sbox_permute_interleave_avx(dvbcsa_bs_word_t *src, dvbc
 		b = _mm256_slli_epi32(b, 16);
 		res2 = BS_OR(res2, b);
 
+		//unpack
 		a = _mm256_unpacklo_epi32(res1, res2);
 		b = _mm256_unpackhi_epi32(res1, res2);
 
-		res1 = _mm256_permute2x128_si256(a, b, 0x20);
-		res2 = _mm256_permute2x128_si256(a, b, 0x31);
-
 		a = _mm256_shuffle_epi8(res1, _mm256_set_epi8(15,13,11,9,7,5,3,1, 14,12,10,8,6,4,2,0, 15,13,11,9,7,5,3,1, 14,12,10,8,6,4,2,0));
 		b = _mm256_shuffle_epi8(res2, _mm256_set_epi8(15,13,11,9,7,5,3,1, 14,12,10,8,6,4,2,0, 15,13,11,9,7,5,3,1, 14,12,10,8,6,4,2,0));
-		res1 = _mm256_unpacklo_epi64(a, b);
-		res2 = _mm256_unpackhi_epi64(a, b);
-		res1 = _mm256_permute4x64_epi64(res1, 0xD8);
-		res2 = _mm256_permute4x64_epi64(res2, 0xD8);
+		res1 = _mm256_unpacklo_epi16(a, b);
+		res2 = _mm256_unpackhi_epi16(a, b);
 
 		_mm256_store_si256(dst + 2*j, res1);
 		_mm256_store_si256(dst + 2*j + 1, res2);
