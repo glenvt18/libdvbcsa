@@ -164,7 +164,6 @@ static inline void block_sbox_avx3(dvbcsa_bs_word_t *src, dvbcsa_bs_word_t *dst)
 	}
 }
 
-/*
 // BS_LOAD_DEINTERLEAVE_8 replacement that only loads data that are already uninterleaved
 
 #define BS_LOAD_DEINTERLEAVE_8(ptr, var_lo, var_hi) \
@@ -197,13 +196,14 @@ static inline void block_sbox_permute_interleave_avx(dvbcsa_bs_word_t *src, dvbc
 
 		a = _mm256_shuffle_epi8(i, _mm256_set_epi8(0x80,0x80,0x80,15,0x80,0x80,0x80,11,0x80,0x80,0x80,7,0x80,0x80,0x80,3, 0x80,0x80,0x80,15,0x80,0x80,0x80,11,0x80,0x80,0x80,7,0x80,0x80,0x80,3));
 		b = _mm256_i32gather_epi32(dvbcsa_block_sbox_perm, a, 2);
+		b = _mm256_slli_epi32(b, 16);
 		res2 = BS_OR(res2, b);
 
 		a = _mm256_unpacklo_epi32(res1, res2);
 		b = _mm256_unpackhi_epi32(res1, res2);
 
-		res1 = _mm256_permute2x128_si256(a, b, 0x02);
-		res2 = _mm256_permute2x128_si256(a, b, 0x13);
+		res1 = _mm256_permute2x128_si256(a, b, 0x20);
+		res2 = _mm256_permute2x128_si256(a, b, 0x31);
 
 		a = _mm256_shuffle_epi8(res1, _mm256_set_epi8(15,13,11,9,7,5,3,1, 14,12,10,8,6,4,2,0, 15,13,11,9,7,5,3,1, 14,12,10,8,6,4,2,0));
 		b = _mm256_shuffle_epi8(res2, _mm256_set_epi8(15,13,11,9,7,5,3,1, 14,12,10,8,6,4,2,0, 15,13,11,9,7,5,3,1, 14,12,10,8,6,4,2,0));
@@ -216,7 +216,6 @@ static inline void block_sbox_permute_interleave_avx(dvbcsa_bs_word_t *src, dvbc
 		_mm256_store_si256(dst + 2*j + 1, res2);
 	}
 }
-*/
 
 #endif
 
