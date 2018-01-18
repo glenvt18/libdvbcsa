@@ -11,6 +11,7 @@ libdvbcsa_la_SOURCES = \
 	dvbcsa_bs.h dvbcsa_pv.h dvbcsa_bs_transpose.h \
 	dvbcsa_bs_uint32.h dvbcsa_bs_uint64.h \
 	dvbcsa_bs_mmx.h dvbcsa_bs_sse.h \
+	dvbcsa_bs_avx2.h \
 	dvbcsa_bs_altivec.h dvbcsa_bs_neon.h
 
 if TRANSPOSE_32
