@@ -70,7 +70,7 @@ typedef __m256i dvbcsa_bs_word_t;
 static inline void block_sbox_avx1(dvbcsa_bs_word_t *src, dvbcsa_bs_word_t *dst) {
 	int j;
 	dvbcsa_bs_word_t a, i, b, res, lsb_mask = _mm256_set_epi32(0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
-	for (j = 0; j < BS_BATCH_BYTES * 8; j += 32) {
+	for (j = 0; j < 8; j++) {
 		i = _mm256_load_si256(src + j);
 
 		a = BS_AND(i, lsb_mask);					//a = src[j+N]
@@ -105,7 +105,7 @@ static inline void block_sbox_avx1(dvbcsa_bs_word_t *src, dvbcsa_bs_word_t *dst)
 static inline void block_sbox_avx2(dvbcsa_bs_word_t *src, dvbcsa_bs_word_t *dst) {
 	int j;
 	dvbcsa_bs_word_t a, i, b, res, lsb_mask = _mm256_set_epi32(0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
-	for (j = 0; j < BS_BATCH_BYTES * 8; j += 32) {
+	for (j = 0; j < 8; j++) {
 		i = _mm256_load_si256(src + j);
 
 		a = BS_AND(i, lsb_mask);
