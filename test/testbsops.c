@@ -241,6 +241,7 @@ main            (void)
 
 #ifdef BS_LOAD_DEINTERLEAVE_8
 
+#ifndef DVBCSA_USE_AVX2
   /* test BS_LOAD_DEINTERLEAVE_8 */
 
   {
@@ -267,6 +268,7 @@ main            (void)
   vec_testeq(b, c);
   vec_testeq(BS_OR(b, BS_VAL8(10)), d);
   }
+#endif
 
 #endif
 
