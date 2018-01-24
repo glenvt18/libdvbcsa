@@ -156,7 +156,7 @@ unsigned int dvbcsa_bs_batch_size (void)
 void
 worddump (const char *str, const void *data, size_t len, size_t ws)
 {
-  const uint8_t *p = data;
+  const uint8_t *p = (const uint8_t *)data;
   uint32_t i;
 
   printf ("- %s - %zu bytes\n", str, len);
