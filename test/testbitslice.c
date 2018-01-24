@@ -29,8 +29,14 @@
 
 #define TS_SIZE         184     /* stream size generation */
 
+
+static unsigned int  gs;
+static uint8_t       cw[8] = {0x12, 0x34, 0x56, 0x78, 0x1e, 0xd4, 0xf6, 0xab};
+static int           n_tests, n_failed;
+
+
 static void
-hexdump (const char *str, const void *data, uint32_t len)
+hexdump(const char *str, const void *data, uint32_t len)
 {
   const uint8_t *p = (const uint8_t *)data;
   uint32_t i;
@@ -41,79 +47,50 @@ hexdump (const char *str, const void *data, uint32_t len)
   puts ("");
 }
 
-static int
-memtest (uint8_t *data, unsigned int val, unsigned int len)
+static void
+init_data(void)
 {
-  unsigned int  i;
-
-  for (i = 0; i < len; i++)
-    if (data[i] != val)
-      return -1;
-
-  return 0;
-}
-
-static unsigned int  gs;
-static uint8_t       **data;
-static unsigned int  *rnd;
-static struct        dvbcsa_bs_batch_s *pcks;
-static uint8_t       cw[8] = {0x12, 0x34, 0x56, 0x78, 0x1e, 0xd4, 0xf6, 0xab};
-static int           n_tests, n_failed;
-
-static void init_data(void)
-{
-  unsigned int i;
-
   //  srand(time(0));
 
   n_tests = 0;
   n_failed = 0;
 
   gs = dvbcsa_bs_batch_size();
-  rnd = (unsigned int *)malloc(gs * sizeof(unsigned int));
-  pcks = (struct dvbcsa_bs_batch_s *)malloc((gs + 1) * sizeof(struct dvbcsa_bs_batch_s));
-  data = (uint8_t **)malloc(gs * sizeof(uint8_t *));
+}
+
+static struct dvbcsa_bs_batch_s *
+generate_packets(unsigned int minlen, unsigned int maxlen,
+                 int random_size, int pattern,
+                 unsigned n_packets)
+{
+  unsigned int i, curlen = minlen;
+  unsigned int rnd;
+  uint8_t *data;
+  struct dvbcsa_bs_batch_s *pcks;
+
+  printf(" - Generating batch with %i packets, size range: %d-%d%s, pattern: 0x%02x%s\n",
+    n_packets, minlen, maxlen, (random_size)? " (random)" : "", pattern & 0xff,
+    (pattern < 0)? " (random)" : "");
+
+  data = (uint8_t *)malloc(n_packets * TS_SIZE);
+  pcks = (struct dvbcsa_bs_batch_s *)malloc((n_packets + 2) * sizeof(struct dvbcsa_bs_batch_s));
+
 #ifdef HAVE_ASSERT_H
-  assert(rnd != NULL);
   assert(pcks != NULL);
   assert(data != NULL);
 #endif
-  for (i = 0; i < gs; i++)
-    {
-      data[i] = (uint8_t *)malloc(TS_SIZE);
-#ifdef HAVE_ASSERT_H
-      assert(data[i] != NULL);
-#endif
-    }
-}
 
-static void free_data(void)
-{
-  unsigned int i;
+  /* store data buffer in pcks[-1] */
+  pcks[0].data = data;
+  pcks[0].len = n_packets * TS_SIZE;
+  pcks++;
 
-  for (i = 0; i < gs; i++)
-    free(data[i]);
-  free(data);
-  free(pcks);
-  free(rnd);
-}
-
-static void
-generate_packets(unsigned int minlen, unsigned int maxlen,
-                 int random_size, int pattern)
-{
-  unsigned int i, curlen = minlen;
-
-  printf(" - Generating batch with %i packets, size range: %d-%d%s, pattern: 0x%02x%s\n",
-      gs, minlen, maxlen, (random_size)? " (random)" : "", pattern & 0xff,
-      (pattern < 0)? " (random)" : "");
-
-  for (i = 0; i < gs; i++)
+  for (i = 0; i < n_packets; i++)
     {
       if (pattern < 0)
-        rnd[i] = rand() & 0xff;
+        rnd = rand() & 0xff;
       else
-        rnd[i] = pattern & 0xff;
+        rnd = pattern & 0xff;
 
       if (random_size)
         {
@@ -121,104 +98,199 @@ generate_packets(unsigned int minlen, unsigned int maxlen,
 
           len = minlen + rand() % (maxlen - minlen + 1);
           offs = rand() % (TS_SIZE - len + 1);
-          pcks[i].data = data[i] + offs;
+          pcks[i].data = data + i * TS_SIZE + offs;
           pcks[i].len = len;
         }
       else
         {
           if (curlen > maxlen)
             curlen = minlen;
-          pcks[i].data = data[i] + (TS_SIZE - curlen);
+          pcks[i].data = data + i * TS_SIZE + (TS_SIZE - curlen);
           pcks[i].len = curlen;
           curlen++;
         }
-      memset(pcks[i].data, rnd[i], pcks[i].len);
+      memset(pcks[i].data, rnd, pcks[i].len);
     }
 
   pcks[i].data = NULL;
+
+  return pcks;
+}
+
+static void
+free_packets(struct dvbcsa_bs_batch_s *pcks)
+{
+  free(pcks[-1].data);
+  free(pcks - 1);
+}
+
+static struct dvbcsa_bs_batch_s *
+clone_packets(const struct dvbcsa_bs_batch_s *pcks)
+{
+  unsigned int i, n_packets;
+  uint8_t *data;
+  struct dvbcsa_bs_batch_s *clone;
+
+  for (n_packets = 0; pcks[n_packets].data; n_packets++);
+
+  data = (uint8_t *)malloc(n_packets * TS_SIZE);
+  clone = (struct dvbcsa_bs_batch_s *)malloc((n_packets + 2) * sizeof(struct dvbcsa_bs_batch_s));
+
+#ifdef HAVE_ASSERT_H
+  assert(clone != NULL);
+  assert(data != NULL);
+#endif
+
+  memcpy(data, pcks[-1].data, n_packets * TS_SIZE);
+  clone[0].data = data;
+  clone[0].len = n_packets * TS_SIZE;
+  clone++;
+
+  for (i = 0; i < n_packets; i++)
+    {
+      int offs = pcks[i].data - (pcks[-1].data + i * TS_SIZE);
+#ifdef HAVE_ASSERT_H
+      assert(offs >= 0 && offs + pcks[i].len <= TS_SIZE);
+#endif
+      clone[i].data = data + i * TS_SIZE + offs;
+      clone[i].len = pcks[i].len;
+    }
+
+   clone[i].data = NULL;
+
+   return clone;
 }
 
 static int
-run_test(void)
+check_packets(const struct dvbcsa_bs_batch_s *got,
+              const struct dvbcsa_bs_batch_s *expected)
 {
   unsigned int i;
-  int ret = 0;
 
-  struct dvbcsa_bs_key_s *ffkey = dvbcsa_bs_key_alloc();
+  printf(" - Checking results...");
+
+  for (i = 0; got[i].data; i++)
+    {
+      if (got[i].len != expected[i].len)
+        {
+          printf("\nlen[%u] mismatch: %u != %u\n", i, got[i].len, expected[i].len);
+          return -1;
+        }
+
+      if (expected[i].data == NULL)
+        {
+          printf("\nexpected[%u] data is NULL\n", i);
+          return -1;
+        }
+
+      if (memcmp(got[i].data, expected[i].data, got[i].len))
+        {
+          printf ("\n - #%u Failed !\n", i);
+          hexdump("failed", got[i].data, got[i].len);
+          return -1;
+        }
+    }
+
+  if (expected[i].data != NULL)
+    {
+      printf("\nexpected[%u] data is not NULL\n", i);
+      return -1;
+    }
+
+  printf("Ok\n");
+  return 0;
+}
+
+static void
+decrypt_packets(const dvbcsa_cw_t cw, struct dvbcsa_bs_batch_s *pcks)
+{
+  unsigned int i;
   struct dvbcsa_key_s *key = dvbcsa_key_alloc();
 
 #ifdef HAVE_ASSERT_H
-  assert(ffkey != NULL);
   assert(key != NULL);
 #endif
+  dvbcsa_key_set(cw, key);
 
-  dvbcsa_key_set (cw, key);
-  dvbcsa_bs_key_set (cw, ffkey);
+  for (i = 0; pcks[i].data; i++)
+    dvbcsa_decrypt(key, pcks[i].data, pcks[i].len);
+
+  dvbcsa_key_free(key);
+}
+
+static void
+encrypt_packets(const dvbcsa_cw_t cw, struct dvbcsa_bs_batch_s *pcks)
+{
+  unsigned int i;
+  struct dvbcsa_key_s *key = dvbcsa_key_alloc();
+
+#ifdef HAVE_ASSERT_H
+  assert(key != NULL);
+#endif
+  dvbcsa_key_set(cw, key);
+
+  for (i = 0; pcks[i].data; i++)
+    dvbcsa_encrypt(key, pcks[i].data, pcks[i].len);
+
+  dvbcsa_key_free(key);
+}
+
+static int
+run_test(unsigned int minlen, unsigned int maxlen,
+         int random_size, int pattern)
+{
+  int err = 0;
+  struct dvbcsa_bs_batch_s *pcks, *orig;
+
+  struct dvbcsa_bs_key_s *ffkey = dvbcsa_bs_key_alloc();
+
+#ifdef HAVE_ASSERT_H
+  assert(ffkey != NULL);
+#endif
+
+  dvbcsa_bs_key_set(cw, ffkey);
+
+  orig = generate_packets(minlen, maxlen, random_size, pattern, gs);
+  pcks = clone_packets(orig);
 
   /* Bitslice decrypt test */
 
   printf(" - Encrypting each packet using dvbcsa_encrypt()\n");
-
-  for (i = 0; pcks[i].data; i++)
-    dvbcsa_encrypt (key, pcks[i].data, pcks[i].len);
-
+  encrypt_packets(cw, pcks);
   printf(" - Decrypting batch using _bitslice_ dvbcsa_bs_decrypt()\n");
-
   dvbcsa_bs_decrypt(ffkey, pcks, 184);
+  err = check_packets(pcks, orig);
 
-  printf(" - Checking results...\n");
+  /* Reset pcks */
 
-  for (i = 0; pcks[i].data; i++)
-    {
-      if (memtest(pcks[i].data, rnd[i], pcks[i].len))
-        {
-          printf (" - #%u Failed !\n", i);
-          hexdump("failed", pcks[i].data, pcks[i].len);
-          ret = -1;
-          goto cleanup;
-        }
-    }
+  free_packets(pcks);
+  pcks = clone_packets(orig);
 
   /* Bitslice encrypt test */
 
   printf(" - Decrypting each packet using dvbcsa_decrypt()\n");
-
-  for (i = 0; pcks[i].data; i++)
-    dvbcsa_decrypt (key, pcks[i].data, pcks[i].len);
-
+  decrypt_packets(cw, pcks);
   printf(" - Encrypting batch using _bitslice_ dvbcsa_bs_encrypt()\n");
-
   dvbcsa_bs_encrypt(ffkey, pcks, 184);
+  err |= check_packets(pcks, orig);
 
-  printf(" - Checking results...\n");
+  if (!err)
+    printf(" - Ok !\n");
 
-  for (i = 0; pcks[i].data; i++)
-    {
-      if (memtest(pcks[i].data, rnd[i], pcks[i].len))
-        {
-          puts (" - Failed !");
-          hexdump("failed", pcks[i].data, pcks[i].len);
-          ret = -1;
-          goto cleanup;
-        }
-    }
-
-  puts (" - Ok !");
-
-cleanup:
-  dvbcsa_key_free(key);
   dvbcsa_bs_key_free(ffkey);
+  free_packets(orig);
+  free_packets(pcks);
 
-  if (ret != 0)
+  if (err)
     n_failed++;
 
   n_tests++;
 
-  return ret;
+  return err;
 }
 
 int
-main (void)
+main(void)
 {
   unsigned int minl;
 
@@ -226,11 +298,9 @@ main (void)
 
   init_data();
 
-  generate_packets(TS_SIZE, TS_SIZE, 0, 0xa5);
-  run_test();
+  run_test(TS_SIZE, TS_SIZE, 0, 0xa5);
 
-  generate_packets(100, TS_SIZE, 1, -1);
-  run_test();
+  run_test(100, TS_SIZE, 1, -1);
 
   for (minl = 0; minl < TS_SIZE; minl += gs)
     {
@@ -238,11 +308,8 @@ main (void)
       if (maxl > TS_SIZE)
         maxl = TS_SIZE;
 
-      generate_packets(minl, maxl, 0, -1);
-      run_test();
+      run_test(minl, maxl, 0, -1);
     }
-
-  free_data();
 
   printf("=======================\n");
   if (n_failed)
