@@ -221,12 +221,21 @@ int
 main (void)
 {
   unsigned int minl;
+  int i;
 
-  printf("* DVBCSA test *\n");
+  //printf("* DVBCSA test *\n");
 
   init_data();
 
   generate_packets(TS_SIZE, TS_SIZE, 0, 0xa5);
+
+  for (i = 0; pcks[i].data; i++)
+    memset(pcks[i].data, i, pcks[i].len);
+
+  dvbcsa_bs_encrypt(NULL, pcks, 184);
+
+  return 0;
+
   run_test();
 
   generate_packets(100, TS_SIZE, 1, -1);

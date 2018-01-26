@@ -26,6 +26,8 @@
 #include "dvbcsa/dvbcsa.h"
 #include "dvbcsa_bs.h"
 
+#include <stdio.h>
+
 #ifdef DVBCSA_USE_ALT_SBOX
 
 #ifdef DVBCSA_ENDIAN_LITTLE
@@ -313,6 +315,17 @@ dvbcsa_bs_block_encrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_
 #endif
   int i, g;
 
+  dvbcsa_u8_aliasing_t *buf = (dvbcsa_u8_aliasing_t *)r;
+  printf("batch=%d\n", BS_BATCH_SIZE);
+  for (i = 0; i < BS_BATCH_SIZE; i++)
+    {
+      if (i % BS_BATCH_BYTES == 0)
+        printf("\n");
+      printf("%4d ", buf[i]);
+    }
+  printf("\n");
+
+  exit(0);
   /* loop over kk[55]..kk[0] */
   for (i = 0; i < 56; i++)
     {
