@@ -42,6 +42,7 @@
 
 /test/benchbitslice
 /test/benchbitsliceks
+/test/benchbitsliceks_mx
 /test/benchdec
 /test/benchenc
 /test/benchks
