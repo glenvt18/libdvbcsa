@@ -115,6 +115,47 @@ void dvbcsa_bs_encrypt(const struct dvbcsa_bs_key_s *key,
                        const struct dvbcsa_bs_batch_s *pcks,
                        unsigned int maxlen);
 
+
+/** Multi-stream API */
+
+/** stream structure */
+struct dvbcsa_bs_mx_stream_s
+{
+  dvbcsa_cw_t cw;                 /* key to be passed to dvbcsa_bs_key_set_mx */
+  unsigned int first_slot;        /* first slot allocated for the stream */
+  unsigned int n_slots;           /* number of slots allocated for the stream */
+  struct dvbcsa_bs_batch_s *pcks; /* stream's batch with extra NULL data */
+};
+
+/** setup a part of the bitslice key context for a particular stream */
+
+void dvbcsa_bs_key_set_mx(struct dvbcsa_bs_key_s *key,
+                          const struct dvbcsa_bs_mx_stream_s *stream);
+
+/** decrypt multiple streams at once. maxlen is the maximum data bytes length
+    to process, must be a multiple of 8, should be 184 for TS packets. */
+
+void dvbcsa_bs_decrypt_mx(const struct dvbcsa_bs_key_s *key,
+                          const struct dvbcsa_bs_mx_stream_s *streams,
+                          unsigned int n_streams,
+                          unsigned int maxlen);
+
+/** encrypt multiple streams at once. maxlen is the maximum data bytes length
+    to process, must be a multiple of 8, should be 184 for TS packets. */
+
+void dvbcsa_bs_encrypt_mx(const struct dvbcsa_bs_key_s *key,
+                          const struct dvbcsa_bs_mx_stream_s *streams,
+                          unsigned int n_streams,
+                          unsigned int maxlen);
+
+/** get the maximum number of slots available for multi-stream processing */
+
+unsigned int dvbcsa_bs_mx_slots(void);
+
+/** get the number of packets per slot */
+
+unsigned int dvbcsa_bs_mx_slot_size(void);
+
 #ifdef __cplusplus
 }
 #endif

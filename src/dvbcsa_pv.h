@@ -158,6 +158,5 @@ dvbcsa_store_le64(uint8_t *p, const uint64_t w)
 #endif
 }
 
-
 #endif
 

@@ -50,7 +50,7 @@ hexdump(const char *str, const void *data, uint32_t len)
 static void
 init_data(void)
 {
-  //  srand(time(0));
+  /*  srand(time(0)); */
 
   n_tests = 0;
   n_failed = 0;
@@ -167,7 +167,9 @@ check_packets(const struct dvbcsa_bs_batch_s *got,
 {
   unsigned int i;
 
-  printf(" - Checking results...");
+  for (i = 0; got[i].data; i++);
+
+  printf(" - Checking results (%d pkts)...", i);
 
   for (i = 0; got[i].data; i++)
     {
@@ -289,10 +291,120 @@ run_test(unsigned int minlen, unsigned int maxlen,
   return err;
 }
 
+static void
+make_mx_cw(struct dvbcsa_bs_mx_stream_s *st)
+{
+  unsigned int i;
+
+  /* TODO generate random-like keys */
+  for (i = 0; i < sizeof(dvbcsa_cw_t); i++)
+    st->cw[i] = st->first_slot + i + st->n_slots;
+}
+
+static int
+run_test_mx(struct dvbcsa_bs_mx_stream_s *streams,
+            unsigned int n_streams)
+{
+  unsigned int i;
+  int err = 0;
+  struct dvbcsa_bs_batch_s **pcks, **orig;
+  struct dvbcsa_bs_key_s *mx_key = dvbcsa_bs_key_alloc();
+
+#ifdef HAVE_ASSERT_H
+  assert(mx_key != NULL);
+#endif
+  pcks = (struct dvbcsa_bs_batch_s **)malloc(n_streams * sizeof(*pcks));
+  orig = (struct dvbcsa_bs_batch_s **)malloc(n_streams * sizeof(*pcks));
+#ifdef HAVE_ASSERT_H
+  assert(pcks != NULL);
+  assert(orig != NULL);
+#endif
+
+  printf(" = Testing streams ");
+  for (i = 0; i < n_streams; i++)
+    {
+      if (i > 0)
+        printf(", ");
+
+      if (streams[i].n_slots > 1)
+        printf("%u-%u", streams[i].first_slot,
+               streams[i].first_slot + streams[i].n_slots - 1);
+
+      else if (streams[i].n_slots == 1)
+        printf("%u", streams[i].first_slot);
+    }
+  printf("\n");
+
+  for (i = 0; i < n_streams; i++)
+    {
+      unsigned int n_packets;
+      struct dvbcsa_bs_mx_stream_s *st = &streams[i];
+
+      n_packets = st->n_slots * dvbcsa_bs_mx_slot_size();
+      orig[i] = generate_packets(100, TS_SIZE, 1, -1, n_packets);
+      pcks[i] = clone_packets(orig[i]);
+      st->pcks = pcks[i];
+
+      make_mx_cw(st);
+      dvbcsa_bs_key_set_mx(mx_key, st);
+    }
+
+  /* Bitslice decrypt_mx test */
+
+  printf(" - Encrypting each stream using dvbcsa_encrypt()\n");
+
+  for (i = 0; i < n_streams; i++)
+    encrypt_packets(streams[i].cw, streams[i].pcks);
+
+  printf(" - Decrypting streams using _bitslice_ dvbcsa_bs_decrypt_mx()\n");
+  dvbcsa_bs_decrypt_mx(mx_key, streams, n_streams, TS_SIZE);
+
+  for (i = 0; i < n_streams; i++)
+    err |= check_packets(streams[i].pcks, orig[i]);
+
+  /* Reset pcks */
+
+  for (i = 0; i < n_streams; i++)
+    {
+      free_packets(pcks[i]);
+      pcks[i] = clone_packets(orig[i]);
+      streams[i].pcks = pcks[i];
+    }
+
+  /* Bitslice encrypt_mx test */
+
+  printf(" - Decrypting each stream using dvbcsa_decrypt()\n");
+
+  for (i = 0; i < n_streams; i++)
+    decrypt_packets(streams[i].cw, streams[i].pcks);
+
+  printf(" - Encrypting streams using _bitslice_ dvbcsa_bs_encrypt_mx()\n");
+  dvbcsa_bs_encrypt_mx(mx_key, streams, n_streams, TS_SIZE);
+  for (i = 0; i < n_streams; i++)
+    err |= check_packets(streams[i].pcks, orig[i]);
+
+  if (!err)
+    printf(" - Ok !\n");
+
+  dvbcsa_bs_key_free(mx_key);
+  free(orig);
+  free(pcks);
+
+  if (err)
+    n_failed++;
+
+  n_tests++;
+
+  return err;
+}
+
 int
 main(void)
 {
   unsigned int minl;
+  int i;
+  struct dvbcsa_bs_mx_stream_s *streams;
+  int max_slots;
 
   printf("* DVBCSA test *\n");
 
@@ -311,7 +423,62 @@ main(void)
       run_test(minl, maxl, 0, -1);
     }
 
+  /* Multi-stream tests */
+
+  printf("* DVBCSA multi-stream test *\n");
+
+  max_slots = dvbcsa_bs_mx_slots();
+  streams = (struct dvbcsa_bs_mx_stream_s *)malloc(
+             max_slots * sizeof(struct dvbcsa_bs_mx_stream_s));
+#ifdef HAVE_ASSERT_H
+  assert(streams != NULL);
+#endif
+
+  streams[0].first_slot = 0;
+  streams[0].n_slots = max_slots;
+  run_test_mx(streams, 1);
+
+  streams[0].first_slot = 2;
+  streams[0].n_slots = 1;
+  run_test_mx(streams, 1);
+
+  streams[0].first_slot = 0;
+  streams[0].n_slots = 1;
+  streams[1].first_slot = 1;
+  streams[1].n_slots = max_slots - 1;
+  run_test_mx(streams, 2);
+
+  streams[0].first_slot = max_slots - 1;
+  streams[0].n_slots = 1;
+  streams[1].first_slot = 0;
+  streams[1].n_slots = max_slots - 1;
+  run_test_mx(streams, 2);
+
+  for (i = 0; i < max_slots; i++)
+    {
+      streams[i].first_slot = i;
+      streams[i].n_slots = 1;
+    }
+  run_test_mx(streams, max_slots);
+
+  for (i = 0; i < 2; i++)
+    {
+      streams[i].first_slot = i * max_slots / 2;
+      streams[i].n_slots = max_slots / 2;
+    }
+  run_test_mx(streams, 2);
+
+  for (i = 0; i < 4; i++)
+    {
+      streams[i].first_slot = i * max_slots / 4;
+      streams[i].n_slots = max_slots / 4;
+    }
+  run_test_mx(streams, 4);
+
+  free(streams);
+
   printf("=======================\n");
+
   if (n_failed)
     printf("%d out of %d tests FAILED.\n", n_failed, n_tests);
   else

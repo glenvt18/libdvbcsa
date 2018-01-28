@@ -85,7 +85,7 @@ void dvbcsa_bs_decrypt(const struct dvbcsa_bs_key_s *key,
   dvbcsa_bs_block_decrypt_batch(key, &pbuf, maxlen);
 #endif
 
-  BS_EMPTY ();                  // restore CPU multimedia state
+  BS_EMPTY ();                  /* restore CPU multimedia state */
 
   dvbcsa_pkt_buf_store(&pbuf, pcks);
 }
@@ -110,9 +110,142 @@ void dvbcsa_bs_encrypt(const struct dvbcsa_bs_key_s *key,
   dvbcsa_bs_stream_cipher_batch(key, &pbuf, maxlen);
 #endif
 
-  BS_EMPTY ();                  // restore CPU multimedia state
+  BS_EMPTY ();                  /* restore CPU multimedia state */
 
   dvbcsa_pkt_buf_store(&pbuf, pcks);
+}
+
+#define DVBCSA_MX_INDEX_TRANSLATE(n)  \
+    (((n) * (BS_BATCH_SIZE / 32)) & (BS_BATCH_SIZE - 1)) + \
+    ((n) * (BS_BATCH_SIZE / 32)) / BS_BATCH_SIZE
+
+static void dvbcsa_pkt_buf_load_mx(struct dvbcsa_bs_pkt_buf *pkt_buf,
+                                   const struct dvbcsa_bs_mx_stream_s *stream)
+{
+  int i, n, k, start, end;
+  struct dvbcsa_bs_batch_s *pcks = stream->pcks;
+
+  if (!stream->pcks || !stream->n_slots)
+    return;
+
+#ifdef HAVE_ASSERT_H
+  assert(stream->first_slot + stream->n_slots <= BS_BATCH_BYTES);
+#endif
+
+  start = stream->first_slot * 8;
+  end = (stream->first_slot + stream->n_slots) * 8;
+
+  for (i = 0, k = start; k < end && pcks[i].data; k++, i++)
+    {
+      n = DVBCSA_MX_INDEX_TRANSLATE(k);
+
+      pkt_buf->len8[n] = pcks[i].len & (unsigned)~0x7;
+      memcpy(pkt_buf->data + n * BS_PKT_BLOCKS8, pcks[i].data, pcks[i].len);
+    }
+}
+
+static void dvbcsa_pkt_buf_store_mx(const struct dvbcsa_bs_pkt_buf *pkt_buf,
+                                    const struct dvbcsa_bs_mx_stream_s *stream)
+{
+  int i, n, k, start, end;
+  struct dvbcsa_bs_batch_s *pcks = stream->pcks;
+
+  if (!stream->pcks || !stream->n_slots)
+    return;
+
+#ifdef HAVE_ASSERT_H
+  assert(stream->first_slot + stream->n_slots <= BS_BATCH_BYTES);
+#endif
+
+  start = stream->first_slot * 8;
+  end = (stream->first_slot + stream->n_slots) * 8;
+
+  for (i = 0, k = start; k < end && pcks[i].data; k++, i++)
+    {
+      n = DVBCSA_MX_INDEX_TRANSLATE(k);
+
+      memcpy(pcks[i].data, pkt_buf->data + n * BS_PKT_BLOCKS8, pcks[i].len);
+    }
+}
+
+void dvbcsa_bs_decrypt_mx(const struct dvbcsa_bs_key_s *key,
+                          const struct dvbcsa_bs_mx_stream_s *streams,
+                          unsigned int n_streams,
+                          unsigned int maxlen)
+{
+  struct dvbcsa_bs_pkt_buf pbuf;
+  unsigned int i;
+
+#ifdef HAVE_ASSERT_H
+  assert(maxlen % 8 == 0);
+  assert(maxlen <= DVBCSA_BS_MAX_PACKET_LEN);
+#endif
+
+  for (i = 0; i < BS_BATCH_SIZE; i++)
+    pbuf.len8[i] = 0;
+
+  for (i = 0; i < n_streams; i++)
+    dvbcsa_pkt_buf_load_mx(&pbuf, &streams[i]);
+
+  pbuf.maxlen = maxlen;
+  pbuf.n_packets = BS_BATCH_SIZE;
+
+#ifndef DVBCSA_DISABLE_STREAM
+  dvbcsa_bs_stream_cipher_batch(key, &pbuf, maxlen);
+#endif
+#ifndef DVBCSA_DISABLE_BLOCK
+  dvbcsa_bs_block_decrypt_batch(key, &pbuf, maxlen);
+#endif
+
+  BS_EMPTY ();                  /* restore CPU multimedia state */
+
+  for (i = 0; i < n_streams; i++)
+    dvbcsa_pkt_buf_store_mx(&pbuf, &streams[i]);
+}
+
+void dvbcsa_bs_encrypt_mx(const struct dvbcsa_bs_key_s *key,
+                          const struct dvbcsa_bs_mx_stream_s *streams,
+                          unsigned int n_streams,
+                          unsigned int maxlen)
+{
+  struct dvbcsa_bs_pkt_buf pbuf;
+  unsigned int i;
+
+#ifdef HAVE_ASSERT_H
+  assert(maxlen % 8 == 0);
+  assert(maxlen <= DVBCSA_BS_MAX_PACKET_LEN);
+#endif
+
+  for (i = 0; i < BS_BATCH_SIZE; i++)
+    pbuf.len8[i] = 0;
+
+  for (i = 0; i < n_streams; i++)
+    dvbcsa_pkt_buf_load_mx(&pbuf, &streams[i]);
+
+  pbuf.maxlen = maxlen;
+  pbuf.n_packets = BS_BATCH_SIZE;
+
+#ifndef DVBCSA_DISABLE_BLOCK
+  dvbcsa_bs_block_encrypt_batch(key, &pbuf, maxlen);
+#endif
+#ifndef DVBCSA_DISABLE_STREAM
+  dvbcsa_bs_stream_cipher_batch(key, &pbuf, maxlen);
+#endif
+
+  BS_EMPTY ();                  /* restore CPU multimedia state */
+
+  for (i = 0; i < n_streams; i++)
+    dvbcsa_pkt_buf_store_mx(&pbuf, &streams[i]);
+}
+
+unsigned int dvbcsa_bs_mx_slots(void)
+{
+  return BS_BATCH_BYTES;
+}
+
+unsigned int dvbcsa_bs_mx_slot_size(void)
+{
+  return 8;
 }
 
 struct dvbcsa_bs_key_s * dvbcsa_bs_key_alloc(void)
