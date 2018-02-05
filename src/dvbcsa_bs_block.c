@@ -26,6 +26,10 @@
 #include "dvbcsa/dvbcsa.h"
 #include "dvbcsa_bs.h"
 
+#ifdef DVBCSA_USE_NEON
+#define DVBCSA_BLOCK_REG_LOOP 1  /* Use register-based rounds loop */
+#endif
+
 #ifdef DVBCSA_USE_ALT_SBOX
 
 #ifdef DVBCSA_ENDIAN_LITTLE
@@ -91,7 +95,7 @@ static const uint16_t dvbcsa_block_sbox_perm[256] =
 
 #ifdef DVBCSA_USE_ALT_SBOX
 
-#define BLOCK_SBOX_PERMUTE(in_buf, out_buf) \
+#define BLOCK_SBOX_PERMUTE(in_buf, out_buf, size) \
     { \
     dvbcsa_u32_aliasing_t *src = (dvbcsa_u32_aliasing_t *)in_buf; \
     dvbcsa_u16_aliasing_t *dst = (dvbcsa_u16_aliasing_t *)out_buf; \
@@ -99,7 +103,7 @@ static const uint16_t dvbcsa_block_sbox_perm[256] =
     uint32_t s; \
     int j; \
     s = *src; \
-    for (j = 0; j < BS_BATCH_BYTES/4 * 8 - 1;) \
+    for (j = 0; j < size / 4 - 1;) \
       { \
         j++; \
         BLOCK_ALT_SBOX_LOAD(s, a, b, c, d) \
@@ -121,13 +125,13 @@ static const uint16_t dvbcsa_block_sbox_perm[256] =
 
 #ifndef BLOCK_SBOX_PERMUTE
 
-#define BLOCK_SBOX_PERMUTE(in_buf, out_buf) \
+#define BLOCK_SBOX_PERMUTE(in_buf, out_buf, size) \
     { \
     dvbcsa_u8_aliasing_t *src = (dvbcsa_u8_aliasing_t *)in_buf; \
     dvbcsa_u16_aliasing_t *dst = (dvbcsa_u16_aliasing_t *)out_buf; \
     uint8_t a, b, c, d; \
     int j; \
-    for (j = 0; j < BS_BATCH_BYTES * 8; j += 4) \
+    for (j = 0; j < size; j += 4) \
       { \
         a = src[j + 0]; \
         b = src[j + 1]; \
@@ -148,7 +152,7 @@ static const uint16_t dvbcsa_block_sbox_perm[256] =
 
 #ifdef DVBCSA_USE_ALT_SBOX
 
-#define BLOCK_SBOX(in_buf, out_buf) \
+#define BLOCK_SBOX(in_buf, out_buf, size) \
     { \
     dvbcsa_u32_aliasing_t *src = (dvbcsa_u32_aliasing_t *)in_buf; \
     dvbcsa_u8_aliasing_t *dst = (dvbcsa_u8_aliasing_t *)out_buf; \
@@ -156,7 +160,7 @@ static const uint16_t dvbcsa_block_sbox_perm[256] =
     uint32_t s; \
     int j; \
     s = *src; \
-    for (j = 0; j < BS_BATCH_BYTES/4 * 8 - 1;) \
+    for (j = 0; j < size / 4 - 1;) \
       { \
         j++; \
         BLOCK_ALT_SBOX_LOAD(s, a, b, c, d) \
@@ -176,13 +180,13 @@ static const uint16_t dvbcsa_block_sbox_perm[256] =
 
 #else
 
-#define BLOCK_SBOX(in_buf, out_buf) \
+#define BLOCK_SBOX(in_buf, out_buf, size) \
     { \
     dvbcsa_u8_aliasing_t *src = (dvbcsa_u8_aliasing_t *)in_buf; \
     dvbcsa_u8_aliasing_t *dst = (dvbcsa_u8_aliasing_t *)out_buf; \
     uint8_t a, b, c, d; \
     int j; \
-    for (j = 0; j < BS_BATCH_BYTES * 8; j += 4) \
+    for (j = 0; j < size; j += 4) \
       { \
         a = src[j + 0]; \
         b = src[j + 1]; \
@@ -211,6 +215,63 @@ static const uint16_t dvbcsa_block_sbox_perm[256] =
 
 #endif /* BS_LOAD_DEINTERLEAVE_8 */
 
+#ifdef DVBCSA_BLOCK_REG_LOOP
+
+DVBCSA_INLINE static inline void
+dvbcsa_bs_block_decrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_t *r)
+{
+  dvbcsa_bs_word_t r0, r1, r2, r3, r4, r5, r6, r7;
+  int i, g;
+
+  for (g = 0; g < 8; g++)
+    {
+      r0 = r[8 * 0 + g];
+      r1 = r[8 * 1 + g];
+      r2 = r[8 * 2 + g];
+      r3 = r[8 * 3 + g];
+      r4 = r[8 * 4 + g];
+      r5 = r[8 * 5 + g];
+      r6 = r[8 * 6 + g];
+      r7 = r[8 * 7 + g];
+
+      /* loop over kk[55]..kk[0] */
+      for (i = 55; i >= 0; i--)
+        {
+          dvbcsa_bs_word_t w, sbox_out, perm_out;
+          dvbcsa_bs_word_t sbox_in[1];
+          dvbcsa_bs_word_t sbox_perm_out[2];
+
+          sbox_in[0] = BS_XOR(block[i], r6);
+
+          /* sbox + bit permutation */
+          BLOCK_SBOX_PERMUTE(sbox_in, sbox_perm_out, BS_BATCH_BYTES);
+
+          BS_LOAD_DEINTERLEAVE_8(sbox_perm_out, sbox_out, perm_out);
+
+          w = BS_XOR(r7, sbox_out);
+          r7 = r6;
+          r6 = BS_XOR(r5, perm_out);
+          r5 = r4;
+          r4 = BS_XOR(r3, w);
+          r3 = BS_XOR(r2, w);
+          r2 = BS_XOR(r1, w);
+          r1 = r0;
+          r0 = w;
+        }
+
+      r[8 * 0 + g] = r0;
+      r[8 * 1 + g] = r1;
+      r[8 * 2 + g] = r2;
+      r[8 * 3 + g] = r3;
+      r[8 * 4 + g] = r4;
+      r[8 * 5 + g] = r5;
+      r[8 * 6 + g] = r6;
+      r[8 * 7 + g] = r7;
+    }
+}
+
+#else
+
 DVBCSA_INLINE static inline void
 dvbcsa_bs_block_decrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_t *r)
 {
@@ -236,10 +297,10 @@ dvbcsa_bs_block_decrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_
 
 #ifdef BS_LOAD_DEINTERLEAVE_8
       /* sbox + bit permutation */
-      BLOCK_SBOX_PERMUTE(scratch1, scratch2);
+      BLOCK_SBOX_PERMUTE(scratch1, scratch2, BS_BATCH_BYTES * 8);
 #else
       /* only sbox */
-      BLOCK_SBOX(scratch1, scratch2);
+      BLOCK_SBOX(scratch1, scratch2, BS_BATCH_BYTES * 8);
 #endif
 
       for (g = 0; g < 8; g++)
@@ -280,16 +341,26 @@ dvbcsa_bs_block_decrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_
     }
 }
 
+#endif  /* DVBCSA_BLOCK_REG_LOOP */
+
 DVBCSA_INLINE static inline void
 dvbcsa_bs_block_decrypt_block(const struct dvbcsa_bs_key_s *key,
                               struct dvbcsa_bs_pkt_buf *pkt_buf,
                               unsigned int offset)
 {
+#ifdef DVBCSA_BLOCK_REG_LOOP
+  dvbcsa_bs_word_t r[8 * 8];
+
+  dvbcsa_bs_block_transpose_in(r, pkt_buf, offset);
+  dvbcsa_bs_block_decrypt_register(key->block, r);
+  dvbcsa_bs_block_transpose_out_and_xor(r, pkt_buf, offset, 0);
+#else
   dvbcsa_bs_word_t r[8 * (8 + 56)];
 
   dvbcsa_bs_block_transpose_in(r + 8 * 56, pkt_buf, offset);
   dvbcsa_bs_block_decrypt_register(key->block, r);
   dvbcsa_bs_block_transpose_out_and_xor(r, pkt_buf, offset, 0);
+#endif
 }
 
 void dvbcsa_bs_block_decrypt_batch(const struct dvbcsa_bs_key_s *key,
@@ -301,6 +372,64 @@ void dvbcsa_bs_block_decrypt_batch(const struct dvbcsa_bs_key_s *key,
   for (i = 0; i < maxlen; i += 8)
     dvbcsa_bs_block_decrypt_block(key, pkt_buf, i);
 }
+
+#ifdef DVBCSA_BLOCK_REG_LOOP
+
+DVBCSA_INLINE static inline void
+dvbcsa_bs_block_encrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_t *r)
+{
+  dvbcsa_bs_word_t r0, r1, r2, r3, r4, r5, r6, r7;
+  int i, g;
+
+  for (g = 0; g < 8; g++)
+    {
+      r0 = r[8 * 0 + g];
+      r1 = r[8 * 1 + g];
+      r2 = r[8 * 2 + g];
+      r3 = r[8 * 3 + g];
+      r4 = r[8 * 4 + g];
+      r5 = r[8 * 5 + g];
+      r6 = r[8 * 6 + g];
+      r7 = r[8 * 7 + g];
+
+      /* loop over kk[0]..kk[55] */
+      for (i = 0; i < 56; i++)
+        {
+          dvbcsa_bs_word_t w, sbox_out, perm_out;
+          dvbcsa_bs_word_t sbox_in[1];
+          dvbcsa_bs_word_t sbox_perm_out[2];
+
+          sbox_in[0] = BS_XOR(block[i], r7);
+
+          /* sbox + bit permutation */
+          BLOCK_SBOX_PERMUTE(sbox_in, sbox_perm_out, BS_BATCH_BYTES);
+
+          w = r0;
+          r0 = r1;
+          r1 = BS_XOR(r2, w);
+          r2 = BS_XOR(r3, w);
+          r3 = BS_XOR(r4, w);
+
+          BS_LOAD_DEINTERLEAVE_8(sbox_perm_out, sbox_out, perm_out);
+
+          r4 = r5;
+          r5 = BS_XOR(r6, perm_out);
+          r6 = r7;
+          r7 = BS_XOR(w, sbox_out);
+        }
+
+      r[8 * 0 + g] = r0;
+      r[8 * 1 + g] = r1;
+      r[8 * 2 + g] = r2;
+      r[8 * 3 + g] = r3;
+      r[8 * 4 + g] = r4;
+      r[8 * 5 + g] = r5;
+      r[8 * 6 + g] = r6;
+      r[8 * 7 + g] = r7;
+    }
+}
+
+#else
 
 DVBCSA_INLINE static inline void
 dvbcsa_bs_block_encrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_t *r)
@@ -325,10 +454,10 @@ dvbcsa_bs_block_encrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_
 
 #ifdef BS_LOAD_DEINTERLEAVE_8
       /* sbox + bit permutation */
-      BLOCK_SBOX_PERMUTE(scratch1, scratch2);
+      BLOCK_SBOX_PERMUTE(scratch1, scratch2, BS_BATCH_BYTES * 8);
 #else
       /* only sbox */
-      BLOCK_SBOX(scratch1, scratch2);
+      BLOCK_SBOX(scratch1, scratch2, BS_BATCH_BYTES * 8);
 #endif
 
       for (g = 0; g < 8; g++)
@@ -369,16 +498,26 @@ dvbcsa_bs_block_encrypt_register (const dvbcsa_bs_word_t *block, dvbcsa_bs_word_
     }
 }
 
+#endif  /* DVBCSA_BLOCK_REG_LOOP */
+
 DVBCSA_INLINE static inline void
 dvbcsa_bs_block_encrypt_block(const struct dvbcsa_bs_key_s *key,
                               struct dvbcsa_bs_pkt_buf *pkt_buf,
                               unsigned int offset)
 {
+#ifdef DVBCSA_BLOCK_REG_LOOP
+  dvbcsa_bs_word_t r[8 * 8];
+
+  dvbcsa_bs_block_transpose_in(r, pkt_buf, offset);
+  dvbcsa_bs_block_encrypt_register(key->block, r);
+  dvbcsa_bs_block_transpose_out_and_xor(r, pkt_buf, offset, 1);
+#else
   dvbcsa_bs_word_t r[8 * (8 + 56)];
 
   dvbcsa_bs_block_transpose_in(r, pkt_buf, offset);
   dvbcsa_bs_block_encrypt_register(key->block, r);
   dvbcsa_bs_block_transpose_out_and_xor(r + 8 * 56, pkt_buf, offset, 1);
+#endif
 }
 
 void dvbcsa_bs_block_encrypt_batch(const struct dvbcsa_bs_key_s *key,

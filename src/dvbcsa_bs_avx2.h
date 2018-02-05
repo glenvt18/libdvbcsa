@@ -61,7 +61,8 @@ typedef __m256i dvbcsa_bs_word_t;
 static const uint16_t dvbcsa_block_sbox_perm[256];
 
 static inline void avx2_block_sbox_permute(dvbcsa_bs_word_t *src,
-                                           dvbcsa_bs_word_t *dst)
+                                           dvbcsa_bs_word_t *dst,
+                                           int size)
 {
   int j;
   dvbcsa_bs_word_t a, i, b, res1, res2;
@@ -73,7 +74,7 @@ static inline void avx2_block_sbox_permute(dvbcsa_bs_word_t *src,
                                                   14,12,10,8,6,4,2,0, \
                                                   15,13,11,9,7,5,3,1, \
                                                   14,12,10,8,6,4,2,0);
-  for (j = 0; j < 8; j++)
+  for (j = 0; j < size / BS_BATCH_BYTES; j++)
     {
       i = _mm256_load_si256(src + j);
 
@@ -111,7 +112,7 @@ static inline void avx2_block_sbox_permute(dvbcsa_bs_word_t *src,
     }
 }
 
-#define BLOCK_SBOX_PERMUTE(in_buf, out_buf) avx2_block_sbox_permute(in_buf, out_buf);
+#define BLOCK_SBOX_PERMUTE(in_buf, out_buf, size) avx2_block_sbox_permute(in_buf, out_buf, size);
 
 #endif
 
