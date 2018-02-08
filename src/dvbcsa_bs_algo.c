@@ -38,12 +38,80 @@
 #include <assert.h>
 #endif
 
+#define DVBCSA_MEASURE_TIME  1
+
+#ifdef DVBCSA_MEASURE_TIME
+
+#include <time.h>
+#include <syslog.h>
+
+#define TM_CLKID  CLOCK_THREAD_CPUTIME_ID
+
+/* number of measurments */
+#define TM_COUNT  2000
+
+struct tm_ctx_s {
+    struct timespec t1, t2;
+    int64_t time_sum;
+    uint64_t pkts;
+    uint64_t bytes;
+    int count;
+};
+
+static struct tm_ctx_s tm_ctx = {
+  .time_sum = 0,
+  .pkts = 0,
+  .bytes = 0,
+  .count = 0
+};
+
+static void tm_start(struct tm_ctx_s *ctx)
+{
+  clock_gettime(TM_CLKID, &ctx->t1);
+}
+
+static void tm_end(struct tm_ctx_s *ctx, int n_packets, int len)
+{
+  int64_t diff;
+
+  clock_gettime(TM_CLKID, &ctx->t2);
+
+  ctx->count++;
+  ctx->pkts += n_packets;
+  ctx->bytes += n_packets * len;
+
+  diff = (ctx->t2.tv_sec * 1000 * 1000 + ctx->t2.tv_nsec / 1000) -
+         (ctx->t1.tv_sec * 1000 * 1000 + ctx->t1.tv_nsec / 1000);
+
+  ctx->time_sum += diff;
+
+  if (ctx->count == TM_COUNT)
+    {
+      syslog(LOG_USER|LOG_INFO,
+             "libdvbcsa:  time: %.0f us   fill: %.2f %%   %.2f Mbits/s",
+             (double)ctx->time_sum / ctx->count,
+             ((double)ctx->pkts / ctx->count) * 100 / BS_BATCH_SIZE,
+             (double)(ctx->bytes * 8) / (double)ctx->time_sum);
+
+      ctx->count = 0;
+      ctx->time_sum = 0;
+      ctx->pkts = 0;
+      ctx->bytes = 0;
+    }
+}
+
+#endif  /* DVBCSA_MEASURE_TIME */
+
 static void dvbcsa_pkt_buf_load(struct dvbcsa_bs_pkt_buf *pkt_buf,
                                 const struct dvbcsa_bs_batch_s *pcks,
                                 unsigned int maxlen)
 {
   int i;
   dvbcsa_bs_block8_t *block = pkt_buf->data;
+
+#ifdef DVBCSA_MEASURE_TIME
+  tm_start(&tm_ctx);
+#endif
 
   for (i = 0; pcks[i].data; i++, block += BS_PKT_BLOCKS8)
     {
@@ -63,6 +131,10 @@ static void dvbcsa_pkt_buf_store(const struct dvbcsa_bs_pkt_buf *pkt_buf,
 
   for (i = 0; pcks[i].data; i++, block += BS_PKT_BLOCKS8)
     memcpy(pcks[i].data, block, pcks[i].len);
+
+#ifdef DVBCSA_MEASURE_TIME
+  tm_end(&tm_ctx, pkt_buf->n_packets, pkt_buf->maxlen);
+#endif
 }
 
 void dvbcsa_bs_decrypt(const struct dvbcsa_bs_key_s *key,
