@@ -93,6 +93,8 @@ void dvbcsa_bs_key_free(struct dvbcsa_bs_key_s *key);
 
 void dvbcsa_bs_key_set(const dvbcsa_cw_t cw, struct dvbcsa_bs_key_s *key);
 
+void dvbcsa_bs_key_set_ecm(const unsigned char ecm, const dvbcsa_cw_t cw, struct dvbcsa_bs_key_s *key);
+
 /** get maximum number of packet per batch */
 
 unsigned int dvbcsa_bs_batch_size(void);
